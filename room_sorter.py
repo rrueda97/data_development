@@ -58,6 +58,8 @@ def main(root_dir):
 
             vid_path = os.path.join(root_dir, fname_vid)
             joints_path = os.path.join(root_dir, fname_joints)
+            if not os.path.exists(joints_path):
+                continue
 
             cap = cv2.VideoCapture(vid_path)
 
