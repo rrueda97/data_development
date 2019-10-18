@@ -7,8 +7,6 @@ import imutils
 #plays back data from a specified folder and allows you to sort into different rooms
 #MAKE SURE to move folder containing all data to 'data_management' repo folder
 
-#Select path for action folder
-action_dir = 'real_w_tensors_2500/Falling_all'
 
 #Reduce Delay to Speed up Playback and vis versa
 playback_delay = 10 #ms
@@ -59,8 +57,9 @@ def main(root_dir):
             vid_path = os.path.join(root_dir, fname_vid)
             joints_path = os.path.join(root_dir, fname_joints)
             if not os.path.exists(joints_path):
+                print('Did not find associated "_joints.tensor" file for ',fname_vid)
+                i += 1
                 continue
-
             cap = cv2.VideoCapture(vid_path)
 
             if not cap.isOpened():
@@ -109,6 +108,7 @@ def main(root_dir):
 
 if __name__ == '__main__':
     root_dir = os.getcwd()
-    sort_dir = os.path.join(root_dir,action_dir)
+    sort_name = input('Path of folder to sort (within data_manaegment): ')
+    sort_dir = os.path.join(root_dir,sort_name)
     print('Sorting From:',sort_dir,'\n')
     main(sort_dir)
