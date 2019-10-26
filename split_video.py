@@ -76,7 +76,7 @@ def split_video(rootdir):
                 fileCount += 1
                 print("Couldn't read {}".format(f))
                 continue
-
+            frame_size = (int(cap.get(3)),int(cap.get(4)))  #get frame size as tuple
             total_frames = int(cap.get(7))  #get frame count from video object
             if manual:                      #get frame count manually
                 total_frames = count_frames(cap)
@@ -97,13 +97,13 @@ def split_video(rootdir):
             
             video = 0
             for j in initial_frames:
-                videowriter = cv2.VideoWriter(os.path.join(split_dir,str(video+1)+'-'+f),fourcc,frame_rate,(256,256))
+                videowriter = cv2.VideoWriter(os.path.join(split_dir,str(video+1)+'-'+f),fourcc,frame_rate,frame_size)
                 for k in range(frames_per_video):
                     cap.set(1,j+k)
                     ret, frame = cap.read()
                     if ret:
                         #frame = undistort(frame)
-                        frame = resize(frame)
+                        #frame = resize(frame)
                         videowriter.write(frame)
                 videowriter.release()
                 video += 1
