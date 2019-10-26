@@ -99,7 +99,7 @@ def split_video(rootdir):
             for j in initial_frames:
                 videowriter = cv2.VideoWriter(os.path.join(split_dir,str(video+1)+'-'+f),fourcc,frame_rate,(256,256))
                 for k in range(frames_per_video):
-                    cap.set(1,j+k+4)
+                    cap.set(1,j+k)
                     ret, frame = cap.read()
                     if ret:
                         #frame = undistort(frame)
