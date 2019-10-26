@@ -21,14 +21,14 @@ K=np.array([[240.21086643847192, 0.0, 318.0152843306422], [0.0, 240.661450295879
 D=np.array([[-0.03561582686662651], [-0.011557711209240214], [0.004239894818130242], [-0.0011662345578036493]])
 
 def undistort_1(img, balance=0.99, dim2=(1920,1080), dim3=(1920,1080)):
-    dim1 = (img.shape[1],img.shape[0])  	#dim1 is the dimension of input image to un-distort
+    dim1 = (img.shape[1],img.shape[0])      #dim1 is the dimension of input image to un-distort
     assert dim1[0]/dim1[1] == DIM[0]/DIM[1] #Image to undistort needs to have same aspect ratio as the ones used in calibratio
     if not dim2:
         dim2 = dim1
     if not dim3:
         dim3 = dim1
-    scaled_K = K * dim1[0] / DIM[0] 		# The values of K is to scale with image dimension.
-    scaled_K[2][2] = 1.0  					# Except that K[2][2] is always 1.0
+    scaled_K = K * dim1[0] / DIM[0]         # The values of K is to scale with image dimension.
+    scaled_K[2][2] = 1.0                    # Except that K[2][2] is always 1.0
     new_K = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(scaled_K, D, dim2, np.eye(3), balance=balance)
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(scaled_K, D, np.eye(3), new_K, dim3, cv2.CV_16SC2)
     undistorted_img = cv2.remap(img, map1, map2, interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
@@ -100,7 +100,7 @@ def preview(cam_num): #Previews Camera for Set Up
         else:
             print('Camera failed to initialize\n')
             break
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
 def capture_init(cam_nums): #Initializes Capture Objects
     caps =[]
@@ -180,39 +180,40 @@ class CaptureObj:
 
 
 def main():
-	while(True):
-		inp = input('\n[d] Collect Data\n[p] Preview Camera\n[f] Test FPS\n[q] Quit\n:')
-		if inp == 'q': 
-			break
-		if inp =='f':
-			while(True):
-				inp2 = input('\nCamera to Test: ')
-				if inp2 == 'q':
-					break
-				delay = input('Delay: ')
-				test_fps(inp2,delay)
-		if inp == 'p':
-			while(True):
-				inp2 = input('\nCamera to Preview: ')
-				if inp2 == 'q':
-					break
-				preview(inp2)
-		if inp == 'd':
-			inp2 = input('Set Camera Numbers (separate with space): ')
-			cam_nums= inp2.split()
-			caps = capture_init(cam_nums)
-			while True:
-				action = input('[1] falling  \n[2] sitting up\n[3] standing \n[4] still on bed \n[5] still on ground \n[6] rolling bed\n[7] rolling ground  \n[q] quit\n:')
-				if action == 'q':
-					break
-				writers = set_writer(action,cam_nums)
-				cap_objs = [CaptureObj(c,w,n) for c,w,n in zip(caps,writers,cam_nums)]
-				multi_thread(cam_nums, capture, cap_objs)
-				for i in range(len(caps)):
-					writers[i].release
+    while(True):
+        inp = input('\n[d] Collect Data\n[p] Preview Camera\n[f] Test FPS\n[q] Quit\n:')
+        if inp == 'q': 
+            break
+        if inp =='f':
+            while(True):
+                inp2 = input('\nCamera to Test: ')
+                if inp2 == 'q':
+                    break
+                delay = input('Delay: ')
+                test_fps(inp2,delay)
+        if inp == 'p':
+            while(True):
+                inp2 = input('\nCamera to Preview: ')
+                if inp2 == 'q':
+                    cv2.destroyAllWindows()
+                    break
+                preview(inp2)
+        if inp == 'd':
+            inp2 = input('Set Camera Numbers (separate with space): ')
+            cam_nums= inp2.split()
+            caps = capture_init(cam_nums)
+            while True:
+                action = input('[1] falling  \n[2] sitting up\n[3] standing \n[4] still on bed \n[5] still on ground \n[6] rolling bed\n[7] rolling ground  \n[q] quit\n:')
+                if action == 'q':
+                    break
+                writers = set_writer(action,cam_nums)
+                cap_objs = [CaptureObj(c,w,n) for c,w,n in zip(caps,writers,cam_nums)]
+                multi_thread(cam_nums, capture, cap_objs)
+                for i in range(len(caps)):
+                    writers[i].release
 
-			for i in range(len(caps)):
-				caps[i].release()
+            for i in range(len(caps)):
+                caps[i].release()
 
 
 if __name__ == '__main__':

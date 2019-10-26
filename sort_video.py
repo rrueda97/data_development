@@ -154,6 +154,6 @@ def main(root_dir):
         i += 1
 
 if __name__ == '__main__':
-    root_dir = os.getcwd()
-    print(root_dir)
-    main(root_dir)
+    dir_name = input('Directory to sort from:')
+    dir_path = os.path.join(os.getcwd(),dir_name)
+    main(dir_path)
