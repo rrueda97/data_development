@@ -17,3 +17,4 @@ as you sort through data make note of things that call your attention that could
 ### real_w_tensors_2500
 * Hard time distinguishing between rolling bed & still on bed. 
 * Review data to draw a clear line between these actions and reclassify them
+* Data from Ji's room is more zoomed in. Frame covers the length of the bed
