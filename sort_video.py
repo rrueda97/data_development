@@ -82,7 +82,7 @@ def main(root_dir):
                     ret, frame = cap.read()
                     if ret:
                         #frame = undistort1(frame)
-                        #frame = resize(frame)
+                        frame = resize(frame)
                         cv2.imshow('frame count: '+str(frame_count),frame)
                     else:
                         break
