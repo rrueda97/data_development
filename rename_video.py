@@ -2,30 +2,32 @@ import cv2
 import os
 import time
 
-classIDs = ['falling', 'sittingUp', 'standing', 'stillGround', 'stillBed', 'rollingGround', 'rollingBed']
-roomIDs = ['room1','room2','room3','room4','room5','room6']
-    #room1 = Ricky's Room BlackHorse
-    #room2 = Ricky's Room BlackHorse (Live Test setup)
-    #room3 = Alex's Garage
-    #room4 = Alistair's Master Room
-    #room5 = Nael's Room BlackHorse
-    #room6 = BlackHorse Living Room
-personIDs = ['RR1','JL1','AT1','AT2','VB1','MM1','BP1']
-    #RR1 = Ricardo Rueda
-    #JL1 = Ji Lee
-    #AT1 = Alex Tam
-    #AT2 = Alistair Twombly
-    #VB1 = Valeria Baena
-    #MM1 = Matt Mercurio
-    #BP1 = Brandon Peck
+classIDs = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
+roomIDs = ['RRuedaBed','ATamGarage','','room4','room5','room6']
+    #room1 = RRuedaBed = Ricky's Room BlackHorse
+    #room2 = RRuedaBed = Ricky's Room BlackHorse (Live Test setup)
+    #room3 = ATamGarage = Alex's Garage
+    #room4 = ATwomblyMaster = Alistair's Master Room
+    #room5 = NMousaBed = Nael's Room BlackHorse
+    #room6 = RRuedaLiving = BlackHorse Living Room
+personIDs = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
+    #RRueda = Ricardo Rueda
+    #JLee = Ji Lee
+    #ATam = Alex Tam
+    #ATwombly = Alistair Twombly
+    #VBaena = Valeria Baena
+    #MMercurio = Matt Mercurio
+    #BPeck = Brandon Peck
+camIDs= ['CamFront','CamBack','CamLeft','CamRight']
+    #wrt person
 def new_name(fname,classID,personID,roomID,dateStamp):
     if '-' in fname:
         if not fname.index('-') > 3:
             splitNum = fname[:fname.index('-')]
         else:
-            splitNum ='1'
+            splitNum ='split1'
     else:
-        splitNum = '1'
+        splitNum = 'split1'
     
     if fname.endswith('.tensor'):
         f_ext = '_joints.tensor'
@@ -34,7 +36,7 @@ def new_name(fname,classID,personID,roomID,dateStamp):
     elif fname.endswith('.mp4'):
         f_ext='.mp4'
     camNum = fname[fname.index('cam'):fname.index('cam')+len('camX')]
-    fname_new = classID+'_'+personID+'_'+roomID+'_'+dateStamp+'_'+camNum+'_'+splitNum+f_ext
+    fname_new = classID+'_'+personID+'_'+roomID+'_'+camNum+'_'+splitNum+'_'+dateStamp+'_'+f_ext
     return fname_new
 
 def main():
@@ -69,6 +71,7 @@ def main():
 if __name__ == '__main__':
     main()
     while True:
+        
         inp = input('continue? [y/n]:')
         if inp == 'n': 
             break
