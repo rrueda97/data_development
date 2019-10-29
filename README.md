@@ -1,6 +1,23 @@
 # data_management
 Scripts for Data Collection, Annotation and Processing
 
+## DataSets and what they inlcude:
+* real_w_tensors_all
+    * JLeeBed w JLee                 (04/2019) BedActions+Standing
+    * RRuedaLiving w RRueda          (04/2019) Falling
+    * RRuedaBed w RRueda+JLee+DBerry (06/2019) BedActions
+    * RRuedaBed w VBaena             (07/2019) AllActions
+    * ATamGarage w ATam              (07/2019) AllActions
+    * AtwomblyMaster w Atwombly      (08/2019) AllActions
+
+* older_data
+    * RRuedaLiving w RRueda+JiLee+RBhardwaj+JAlvarenga (04??/2019) GroundActions+Standing+Falling
+* test_set
+    * NMousaBed w MMercurio (8/2019) AllActions
+* liveset
+    * RRuedaBed w RRueda (09-10/2019) BedActions+Standing
+
+
 ## Notes:
 as you sort through data make note of things that call your attention that could be useful and suggest meta data that could be collected
 
