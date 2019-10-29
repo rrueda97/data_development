@@ -20,6 +20,32 @@ personIDs = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
     #BPeck = Brandon Peck
 camIDs= ['CamFront','CamBack','CamLeft','CamRight']
     #wrt person
+
+
+class data_file:
+    fname_ids = ['classID','personID','roomID','camID','splitNum','dateID','extension']
+    other_ids = ['variance','% joints generated','etc']
+    columns = fname_ids.extend(other_ids) #?
+
+    #later it can initialize from csv info once it's been written to
+    def __init__(self,fname):
+        self.fname = fname
+        #parse fname into: classID,personID,roomID,camID,dateID
+        #if fname doesn't contain info then = None
+        ids = fname.split('_')
+        if len(ids) == len(fname_ids):
+            for i in ids:
+                self.fname_ids[i] = ids[i]
+        else:
+            for i in fname_ids:
+                self.fname_ids[i] = None
+
+    def has_joints(self,fname):
+
+    def write_to_csv(self):
+        #pandas stuff
+
+
 def main_loop(data_dir):
     #Parameters
     playback_delay = 10 #ms
