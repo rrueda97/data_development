@@ -1,21 +1,45 @@
 # data_management
 Scripts for Data Collection, Annotation and Processing
 
-## DataSets and what they inlcude:
+## DataSets Summary:
 * real_w_tensors_all
-    * JLeeBed w JLee                 (04/2019) BedActions+Standing
-    * RRuedaLiving w RRueda          (04/2019) Falling
-    * RRuedaBed w RRueda+JLee+DBerry (06/2019) BedActions
-    * RRuedaBed w VBaena             (07/2019) AllActions
-    * ATamGarage w ATam              (07/2019) AllActions
-    * AtwomblyMaster w Atwombly      (08/2019) AllActions
-
+    * JLeeBed w JLee
+        * 04/2019 
+        * Bed Actions+Standing
+    * RRuedaLiving w RRueda
+        * 04/2019
+        * Falling
+    * RRuedaBed w RRueda+JLee+DBerry
+        * 06/2019
+        * Bed Actions
+    * RRuedaBed w VBaena
+        * 07/2019
+        * All Actions
+    * ATamGarage w ATam
+        * 07/2019
+        * All Actions
+    * AtwomblyMaster w Atwombly
+        * 08/2019)
+        * All Actions
 * older_data
-    * RRuedaLiving w RRueda+JiLee+RBhardwaj+JAlvarenga (04??/2019) GroundActions+Standing+Falling
-* test_set
-    * NMousaBed w MMercurio (8/2019) AllActions
+    * RRuedaLiving w RRueda+JiLee+RBhardwaj+JAlvarenga 
+        * 04??/2019
+        * Ground Actions+Standing+Falling
+* Test_Set_Original
+    * NMousaBed w MMercurio 
+        * 09/2019 
+        * GroundActions+BedActions
+* Test_Set_fisheye_undistorted
+    * collected in Tandem with Test_Set_Original
+    * processed fisheye 
+* test_8_27_19
+    * NMousaBed w MMercurio 
+        * 08/2019 All Actions
+    * Fisheye Distortion
 * liveset
-    * RRuedaBed w RRueda (09-10/2019) BedActions+Standing
+    * RRuedaBed w RRueda 
+        * 09-10/2019 
+        * BedActions+Standing
 
 
 ## Notes:
