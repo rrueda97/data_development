@@ -2,15 +2,15 @@ import cv2
 import os
 import time
 
-classIDs = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
-roomIDs = ['RRuedaBed','ATamGarage','','room4','room5','room6']
+classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
+roomID_labels = ['RRuedaBed','ATamGarage','','room4','room5','room6']
     #room1 = RRuedaBed = Ricky's Room BlackHorse
     #room2 = RRuedaBed = Ricky's Room BlackHorse (Live Test setup)
     #room3 = ATamGarage = Alex's Garage
     #room4 = ATwomblyMaster = Alistair's Master Room
     #room5 = NMousaBed = Nael's Room BlackHorse
     #room6 = RRuedaLiving = BlackHorse Living Room
-personIDs = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
+personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
     #RRueda = Ricardo Rueda
     #JLee = Ji Lee
     #ATam = Alex Tam
@@ -18,32 +18,79 @@ personIDs = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
     #VBaena = Valeria Baena
     #MMercurio = Matt Mercurio
     #BPeck = Brandon Peck
-camIDs= ['CamFront','CamBack','CamLeft','CamRight']
+camID_labels= ['CamFront','CamBack','CamLeft','CamRight']
     #wrt person
 
 
 class data_file:
     fname_ids = ['classID','personID','roomID','camID','splitNum','dateID','extension']
-    other_ids = ['variance','% joints generated','etc']
-    columns = fname_ids.extend(other_ids) #?
+    other_ids = ['bad','questionable','variance','% joints generated','etc']
+    attributes = fname_ids.extend(other_ids) #all attributes
 
     #later it can initialize from csv info once it's been written to
     def __init__(self,fname):
+        self.attributes = attributes #list of attributes
         self.fname = fname
+        self.prev_fname = None
+        ids_from_fname = fname.split('_')
+        if len(ids_from_fname) == len(fname_ids):
+            self.classID = ids_from_fname[0]
+            self.personID = ids_from_fname[1]
+            self.roomID = ids_from_fname[2]
+            self.camID = ids_from_fname[3]
+            self.splitNum = ids_from_fname[4]
+        else:
+            self.classID = None
+            self.personID = None
+            self.roomID = None
+            self.camID = None
+            self.splitNum = None
+
+        self.bad = False
+        self.questionable = False
+
+
         #parse fname into: classID,personID,roomID,camID,dateID
         #if fname doesn't contain info then = None
-        ids = fname.split('_')
-        if len(ids) == len(fname_ids):
-            for i in ids:
-                self.fname_ids[i] = ids[i]
-        else:
-            for i in fname_ids:
-                self.fname_ids[i] = None
 
-    def has_joints(self,fname):
+        #???
+        ids_from_fname = fname.split('_')
+        if len(ids_from_fname) == len(fname_ids):
+            for i in ids_from_fname:
+                self.fname_ids[i] = ids_from_fname[i]
+            for j in other_ids:
+                self.other_ids[i] = None
+        else:
+            for i in attributes:
+                self.attributes[i] = None
+
+
+
+    def is_bad(self):
+        self.bad = True
+        return self.bad
+    def is_quest(self):
+        self.questionable = True
+        return self.questionable
+    def has_joints(self):
+        joints_file = self.fname[:-len('.avi')]+'_joints.tensor' 
+        joints_path = os.path.join(os.getcwd(),joints_file) #check for associated joints file
+        if not os.path.exists(joints_path):
+            
 
     def write_to_csv(self):
         #pandas stuff
+    def new_name(self): #new name based on updated attribute labels
+        fname = self.fname
+        if fname.endswith('.avi'):
+            f_ext='.avi'
+        elif fname.endswith('.mp4'):
+            f_ext='.mp4'
+        fname_new = 
+        for attribute in fname_ids:
+            fnam_new =  
+        fname_new = self.classID+'_'+personID+'_'+roomID+'_'+camNum+'_'+splitNum+'_'+dateStamp+'_'+f_ext
+        return fname_new
 
 
 def main_loop(data_dir):
@@ -54,6 +101,7 @@ def main_loop(data_dir):
     videos, joints = grab_files(data_dir)
     renamed_vids= []
     renamed_joints = []
+    data_objs = [] 
     i = 0
     while i < len(videos):
         cv2.destroyAllWindows() #get rid of any previous display window
@@ -70,24 +118,23 @@ def main_loop(data_dir):
             i += 1
             continue
 ################################################# pseudo code for process flow of User interface ########
-
-        meta_labels = ['Action Class','Person ID','Room ID','Cam Angle','Split Number']
-        for i,label in enumerate(meta_labels):
-            print('['+str(i)+'] '+label+': '+str(CURRENT_META_DATA_LABEL)) 
-            #[n] None
-            #[1] Action Class: StillGround
-            #[2] Person ID: RRueda
-            #[3] Room ID: RRuedaBed
-            #[4] Cam Angle: None
-            #[5] Split Number: split1
+        data_obj = data_file(fname_vid) 
+        for i,attribute in enumerate(data_obj.attributes):
+            print('['+str(i)+'] '+attribute+': '+ data_obj.attribute)
+            #[0] classID: StillGround
+            #[1] personID: RRueda
+            #[2] roomID: RRuedaBed
+            #[3] camID: None
+            #[4] splitNum: split1
+            #[5] dateID: None
         for i in other_options:
             print(option)
+            #[a] all
+            #[n] none
             #[r] replay
             #[p] replay previous
-            #[b] bad example
-            #[q] questionable example
 
-        edit_labels = input('Enter Labels You Want to Edit / Other Option') #separated by space
+        edit_labels = input('Enter Labels You Want to Edit / Other Option: ') #separated by space
         if edit_labels == 'r'
             disp_vid(fpath_vid)
         elif edit_labels == 'p'
@@ -111,16 +158,30 @@ def main_loop(data_dir):
                 os.rename(fpath_joints,os.path.join(data_dir,fname_joints_new))
                 i+=1
                 continue
+        elif edit_labels = 'a':
+            for attribute in data_obj.attributes:
+                preset_labels = globals()[attribute+'_labels']
+                for i,preset_label in enumerate(preset_labels)
+                    print('['+str(i)+'] '+preset_label)
+                print('[enter] other')
+                new_label_i = input('choose label: ')
+                if new_label_i =='':
+                    new_label = input('new label: ')
+                    print('update label list in sort_data.py')
+                else:
+                    new_label = preset_labels[int(new_label_i)]
+                data_obj.attribute = new_label #update object
+
         else:
             edit_labels = edit_labels.split()
             for label in edit_labels:
-                new_label = input('label:')
+                new_label = input(attribute+':')
                 #update data class label
             continue 
 ########################################################################################################
 
 
-
+# maybe define this within the data_file class
 def new_name(fname,classID,personID,roomID,dateStamp):
     if '-' in fname:
         if not fname.index('-') > 3:
