@@ -109,19 +109,28 @@ class data_file:
             f_ext='.avi'
         elif self.fname.endswith('.mp4'):
             f_ext='.mp4'
-        fname_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+'_'+f_ext
+        fname_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+f_ext
         fname_joints_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+'_'+'joints.tensor'
         return fname_new,fname_joints_new
 
-    def re_name(self,root_dir,labeled_dir):
+    def re_name(self,root_dir,labeled_dir,restored):
         #update filename attributes, store previous filename, rename files
-        self.prev_fname = self.fname
+        if not restored:
+            self.prev_fname = self.fname #only update when NOT dealing with a restored file because os.rename() it will not find prev_fname in directory
         self.prev_fname_joints = self.fname[:-len('.avi')]+'_joints.tensor'
         self.fname,self.fname_joints = self.new_name()
         os.rename(os.path.join(root_dir,self.prev_fname),os.path.join(labeled_dir,self.fname))
         if self.has_joints:
             os.rename(os.path.join(root_dir,self.prev_fname_joints),os.path.join(labeled_dir,self.fname_joints))
 #############################################################################################################################
+#pseudo
+#def csv_write(csv_dir,data_objs):
+#   column_names = vars(data_objs[0])[0]
+#   for object in data_objs:
+#       data_dict=vars(object)
+#       row = someShit(data_dict)
+#       csv.write(row)
+
 def sort_attrs(data_obj): #creates dictionary where empty attributes of type None are first (have keys 0-n)
     sorted_dict = {}
     sorted_ls = []
@@ -224,10 +233,10 @@ def main_loop(data_dir):
             data_obj = data_file(fname_vid,data_dir,constants)
         else:
             data_obj= data_objs.pop() #returns and removes last element of list
-        opts_dict = {'[enter]':'replay','[a]':'previous video','[d]':'next video','[s]':'set constant labels','[l]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
-        restored = False 
+        opts_dict = {'[enter]':'replay','[a]':'previous video','[d]':'next video','[s]':'set constant labels','[l]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'} 
         new_labels = {}
         while True:
+            print(constants)
             attrs = sort_attrs(data_obj)
             attr_vals = vars(data_obj) #Dictionary with current attributes and labels
             print('\nfname:',data_obj.fname)
@@ -242,9 +251,11 @@ def main_loop(data_dir):
             if not x: #Replays video
                 disp_vid(fpath_vid,playback_delay)
             elif x == 'a': #Shows Next Video
+                restored = False
                 i+= 1
                 break
             elif x == 'd': #Shows Previous Video unless it has already been sorted
+                restored = False
                 i-=1
                 break
             elif x == 'b':
@@ -253,14 +264,16 @@ def main_loop(data_dir):
                 quest_info = input('\nNote on why its questionable: ')
                 data_obj.is_quest(quest_info)
             elif x == 's':
+                restored = False
                 constants = set_constants(constants) #initializes/updates constants
                 break
             elif x =='f':
                 confirm = input('Are you sure?[y/n]: ')
                 if confirm == 'y':
-                    data_obj.re_name(data_dir,labeled_dir) #rename files & put them into labeled_data
+                    data_obj.re_name(data_dir,labeled_dir,restored) #rename files & put them into labeled_data
                     data_objs.append(data_obj) #append object for accessing later
                     i+=1 
+                    restored = False
                     break
                 else: continue
             elif x == 'l':
