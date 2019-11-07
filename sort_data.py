@@ -1,115 +1,218 @@
 import cv2
+import imutils
 import os
 import time
+import csv
 
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
-roomID_labels = ['RRuedaBed','ATamGarage','','room4','room5','room6']
-    #room1 = RRuedaBed = Ricky's Room BlackHorse
-    #room2 = RRuedaBed = Ricky's Room BlackHorse (Live Test setup)
-    #room3 = ATamGarage = Alex's Garage
-    #room4 = ATwomblyMaster = Alistair's Master Room
-    #room5 = NMousaBed = Nael's Room BlackHorse
-    #room6 = RRuedaLiving = BlackHorse Living Room
-personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','BPeck']
-    #RRueda = Ricardo Rueda
-    #JLee = Ji Lee
-    #ATam = Alex Tam
-    #ATwombly = Alistair Twombly
-    #VBaena = Valeria Baena
-    #MMercurio = Matt Mercurio
-    #BPeck = Brandon Peck
-camID_labels= ['CamFront','CamBack','CamLeft','CamRight']
-    #wrt person
+roomID_labels = ['RRuedaBed','ATamGarage','ATwomblyMaster','NMousaBed','RRuedaLiving','JLeeBed']
+    #RRuedaBed = Ricky's Room BlackHorse
+    #ATamGarage = Alex's Garage
+    #ATwomblyMaster = Alistair's Master Room
+    #NMousaBed = Nael's Room BlackHorse
+    #RRuedaLiving = BlackHorse Living Room
+personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','DBerry','JAlvarenga','RBhardwaj']
+camID_labels= ['CamFront','CamBack','CamLeft','CamRight']#camera view wrt person
+splitNum_labels = ['split0','split1','split2']
+descrip_labels = ['low','medium','high']
+position_labels = ['center','right','left','top','bottom']
+clothing_labels = ['tshirt + pants','tshirt + shorts','longsleeve + pants','longsleeve + shorts','tank + pants','tank + shorts']
+gender_labels = ['male','female']
+labels_dict = {'classID':classID_labels,'personID':personID_labels,'roomID':roomID_labels,'camID':camID_labels,'splitNum':splitNum_labels,'position':position_labels,'clothing':clothing_labels,'gender': gender_labels}
+labels_dict.update(dict.fromkeys(['skinTone','lighting','roomInfo','zoom','vidSpeed','variance'],descrip_labels))
 
+#save as json?
 
 class data_file:
-    fname_ids = ['classID','personID','roomID','camID','splitNum','dateID','extension']
-    other_ids = ['bad','questionable','variance','% joints generated','etc']
-    attributes = fname_ids.extend(other_ids) #all attributes
-
     #later it can initialize from csv info once it's been written to
-    def __init__(self,fname):
-        self.attributes = attributes #list of attributes
+    def __init__(self,fname,root_dir,constants = None):
         self.fname = fname
-        self.prev_fname = None
-        ids_from_fname = fname.split('_')
-        if len(ids_from_fname) == len(fname_ids):
-            self.classID = ids_from_fname[0]
-            self.personID = ids_from_fname[1]
-            self.roomID = ids_from_fname[2]
-            self.camID = ids_from_fname[3]
-            self.splitNum = ids_from_fname[4]
+        joints_path = os.path.join(root_dir,self.fname[:-len('.avi')]+'_joints.tensor')
+        if not os.path.exists(joints_path):
+            self.has_joints = False
+        else:
+            self.has_joints= True
+        if not constants == None:
+            self.classID = constants['classID']
+            self.personID = constants['personID']
+            self.roomID = constants['roomID']
+            self.camID = constants['camID']
+            self.splitNum = constants['splitNum']
+            self.position = constants['position']
+            self.clothing = constants['clothing']
+            self.gender = constants['gender']
+            self.skinTone = constants['skinTone']
+            self.lighting = constants['lighting']
+            self.roomInfo = constants['roomInfo']
+            self.zoom = constants['zoom']
+            self.vidSpeed = constants['vidSpeed']
+            self.variance = constants['variance']
+            self.bad = False
+            self.questionable = False
         else:
             self.classID = None
             self.personID = None
             self.roomID = None
             self.camID = None
             self.splitNum = None
-
-        self.bad = False
-        self.questionable = False
-
-
-        #parse fname into: classID,personID,roomID,camID,dateID
-        #if fname doesn't contain info then = None
-
-        #???
-        ids_from_fname = fname.split('_')
-        if len(ids_from_fname) == len(fname_ids):
-            for i in ids_from_fname:
-                self.fname_ids[i] = ids_from_fname[i]
-            for j in other_ids:
-                self.other_ids[i] = None
-        else:
-            for i in attributes:
-                self.attributes[i] = None
-
-
+            self.position = None
+            self.clothing = None
+            self.gender = None
+            self.skinTone = None
+            self.lighting = None
+            self.roomInfo = None
+            self.zoom = None
+            self.vidSpeed = None
+            self.variance = None
+            self.bad = False
+            self.questionable = False
 
     def is_bad(self):
         self.bad = True
-        return self.bad
-    def is_quest(self):
+
+    def is_quest(self,quest_info = None):
         self.questionable = True
-        return self.questionable
-    def has_joints(self):
-        joints_file = self.fname[:-len('.avi')]+'_joints.tensor' 
-        joints_path = os.path.join(os.getcwd(),joints_file) #check for associated joints file
-        if not os.path.exists(joints_path):
-            
+        self.quest_info = quest_info
 
-    def write_to_csv(self):
+    def is_good(self):
+        self.questionable = False
+        self.quest_info = None
+        self.bad = False
+
+    def set_new_labels(self,new_labels):
+        for key in labels_dict: #set everything else to None  MOVE THIS INSIDE THE CLASS set_new_labels method
+            if key not in new_labels:
+                new_labels[key] = None
+        self.classID = new_labels['classID']
+        self.personID = new_labels['personID']
+        self.roomID = new_labels['roomID']
+        self.camID = new_labels['camID']
+        self.splitNum = new_labels['splitNum']
+        self.position = new_labels['position']
+        self.clothing = new_labels['clothing']
+        self.gender = new_labels['gender']
+        self.skinTone = new_labels['skinTone']
+        self.lighting = new_labels['lighting']
+        self.roomInfo = new_labels['roomInfo']
+        self.zoom = new_labels['zoom']
+        self.vidSpeed = new_labels['vidSpeed']
+        self.variance = new_labels['variance']
+
+#    def csv_write(self):
         #pandas stuff
-    def new_name(self): #new name based on updated attribute labels
-        fname = self.fname
-        if fname.endswith('.avi'):
+        #write 
+
+    def new_name(self):
+        date_fmt = '%m-%d-%y-%H-%M-%S' #April 20th 2020 @ 1:05:30 pm = 04-20-20-13-05-30
+        dateStamp = time.strftime(date_fmt)
+        if self.fname.endswith('.avi'):
             f_ext='.avi'
-        elif fname.endswith('.mp4'):
+        elif self.fname.endswith('.mp4'):
             f_ext='.mp4'
-        fname_new = 
-        for attribute in fname_ids:
-            fnam_new =  
-        fname_new = self.classID+'_'+personID+'_'+roomID+'_'+camNum+'_'+splitNum+'_'+dateStamp+'_'+f_ext
-        return fname_new
+        fname_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+'_'+f_ext
+        fname_joints_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+'_'+'joints.tensor'
+        return fname_new,fname_joints_new
+
+    def re_name(self,root_dir,labeled_dir):
+        #update filename attributes, store previous filename, rename files
+        self.prev_fname = self.fname
+        self.prev_fname_joints = self.fname[:-len('.avi')]+'_joints.tensor'
+        self.fname,self.fname_joints = self.new_name()
+        os.rename(os.path.join(root_dir,self.prev_fname),os.path.join(labeled_dir,self.fname))
+        if self.has_joints:
+            os.rename(os.path.join(root_dir,self.prev_fname_joints),os.path.join(labeled_dir,self.fname_joints))
+#############################################################################################################################
+def sort_attrs(data_obj): #creates dictionary where empty attributes of type None are first (have keys 0-n)
+    sorted_dict = {}
+    sorted_ls = []
+    attrs_dict = vars(data_obj)
+    for attr in attrs_dict: #creates a list where empty attributes ( = None) are on top
+        if attr == 'fname' or attr =='has_joints' or attr == 'fname_joints' or attr == 'bad' or attr == 'questionable': #Don't include these attributes
+            continue
+        if attrs_dict[attr] == None:
+            sorted_ls.insert(0,attr)
+        else:
+            sorted_ls.append(attr)
+    for item in sorted_ls: #dictionary with list indeces as keys 
+        sorted_dict[str(sorted_ls.index(item))] = item
+    return sorted_dict
 
 
+def set_constants(constants=None): #input previous set constants
+    if constants == None:
+        constants_dict = {}
+    else:
+        constants_dict = constants
+    while True:
+        constants_ls = []
+        print('\nSelect Constant Attribute Labels')
+        for i,attr in enumerate(labels_dict):
+            if attr in constants_dict:
+                constants_ls.append(attr)
+                print('['+str(i)+']',attr,':',constants_dict[attr]) #show constants that have been set
+            else:
+                constants_ls.append(attr)
+                print('['+str(i)+']',attr)
+        print('[q] Done')
+        user_inp = input('\nSelect an Attribute: ')
+        if user_inp == 'q':
+            break
+        attr_sel = constants_ls[int(user_inp)]
+        print('\n',attr_sel,':')
+        for j,label in enumerate(labels_dict[attr_sel]):
+            print('['+str(j)+']',label)
+        print('[n] None')
+        new_label_i = input('\nSelect a Label: ')
+        if new_label_i == 'n':
+            new_label = None
+        else: 
+            new_label=labels_dict[attr_sel][int(new_label_i)]
+        constants_dict[attr_sel]=new_label
+    for key in labels_dict: #set everything else to None
+        if key not in constants_dict:
+            constants_dict[key] = None
+    return constants_dict
+
+def edit_label(attr):
+    print('\nLabels for',attr)
+    for i,label in enumerate(labels_dict[attr]):
+        print('['+str(i)+']',label)
+    new_label_i = input('Select New Label: ')
+    new_label = labels_dict[attr][int(new_label_i)]
+    return new_label
+def restore(prev_data_obj,from_dir,to_dir):
+    from_path = os.path.join(from_dir,prev_data_obj.fname)
+    from_path_joints = os.path.join(from_dir,prev_data_obj.fname_joints)
+    to_path = os.path.join(to_dir,prev_data_obj.prev_fname)
+    to_path_joints = os.path.join(to_dir,prev_data_obj.prev_fname_joints)
+    os.rename(from_path,to_path)
+    if prev_data_obj.has_joints:
+        os.rename(from_path_joints,to_path_joints)
 def main_loop(data_dir):
-    #Parameters
+    restored = None #initialize restoring flag
+    constants = None #initialize with none
     playback_delay = 10 #ms
-    date_fmt = '%m-%d-%y-%H-%M-%S' #April 20th 2020 @ 1:05:30 pm = 04-20-20-13-05-30
+    labeled_dir = os.path.join(data_dir,'labeled_data')
+    if not os.path.exists(labeled_dir):
+        os.mkdir(labeled_dir)
     bad_vid_dir = os.path.join(data_dir,'bad_videos')
     videos, joints = grab_files(data_dir)
     renamed_vids= []
     renamed_joints = []
     data_objs = [] 
     i = 0
+    print('total videos:',len(videos))
     while i < len(videos):
         cv2.destroyAllWindows() #get rid of any previous display window
         fname_vid = videos[i]
         fname_joints = joints[i]
         fpath_vid = os.path.join(data_dir,fname_vid)
         fpath_joints = os.path.join(data_dir,fname_joints)
-        bad_video = disp_vid(fpath_vid)
+        if not os.path.exists(fpath_vid):
+            print("can't replay what has already been sorted")
+            i+=1
+            continue
+        bad_video = disp_vid(fpath_vid,playback_delay)
         if bad_video:
             if not os.path.exists(bad_vid_dir):
                 os.mkdir(bad_vid_dir)
@@ -117,89 +220,62 @@ def main_loop(data_dir):
             os.rename(fpath_joints,bad_vid_dir)
             i += 1
             continue
-################################################# pseudo code for process flow of User interface ########
-        data_obj = data_file(fname_vid) 
-        for i,attribute in enumerate(data_obj.attributes):
-            print('['+str(i)+'] '+attribute+': '+ data_obj.attribute)
-            #[0] classID: StillGround
-            #[1] personID: RRueda
-            #[2] roomID: RRuedaBed
-            #[3] camID: None
-            #[4] splitNum: split1
-            #[5] dateID: None
-        for i in other_options:
-            print(option)
-            #[a] all
-            #[n] none
-            #[r] replay
-            #[p] replay previous
-
-        edit_labels = input('Enter Labels You Want to Edit / Other Option: ') #separated by space
-        if edit_labels == 'r'
-            disp_vid(fpath_vid)
-        elif edit_labels == 'p'
-            #undo renaming and go back to previous example
-            os.rename(os.path.join(data_dir,renamed_vids[-1]),fpath_vid[i-1])
-            os.rename(os.path.join(data_dir,renamed_joints[-1]),fpath_joints[i-1])
-            renamed_vids.remove(renamed_vids[-1])
-            renamed_joints.remove(renamed_joints[-1])
-            i-=1
-            continue
-
-        elif edit_labels == 'n'
-            confirm = input('are you sure? [y/n]:')
-            if confirm =='y':
-                dateStamp = time.strftime(fmt)
-                fname_vid_new = new_name(fname_vid,classID,personID,roomID,dateStamp)
-                fname_joints_new= new_name(fname_joints,classID,personID,roomID,dateStamp)
-                renamed_vids.append(fname_vid_new)
-                renamed_joints.append(fname_joints_new)
-                os.rename(fpath_vid,os.path.join(data_dir,fname_vid_new))
-                os.rename(fpath_joints,os.path.join(data_dir,fname_joints_new))
-                i+=1
-                continue
-        elif edit_labels = 'a':
-            for attribute in data_obj.attributes:
-                preset_labels = globals()[attribute+'_labels']
-                for i,preset_label in enumerate(preset_labels)
-                    print('['+str(i)+'] '+preset_label)
-                print('[enter] other')
-                new_label_i = input('choose label: ')
-                if new_label_i =='':
-                    new_label = input('new label: ')
-                    print('update label list in sort_data.py')
-                else:
-                    new_label = preset_labels[int(new_label_i)]
-                data_obj.attribute = new_label #update object
-
+        if not restored:
+            data_obj = data_file(fname_vid,data_dir,constants)
         else:
-            edit_labels = edit_labels.split()
-            for label in edit_labels:
-                new_label = input(attribute+':')
-                #update data class label
-            continue 
-########################################################################################################
+            data_obj= data_objs.pop() #returns and removes last element of list
+        opts_dict = {'[enter]':'replay','[a]':'previous video','[d]':'next video','[s]':'set constant labels','[l]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
+        restored = False 
+        new_labels = {}
+        while True:
+            attrs = sort_attrs(data_obj)
+            attr_vals = vars(data_obj) #Dictionary with current attributes and labels
+            print('\nfname:',data_obj.fname)
+            print('has joints:',data_obj.has_joints,'\n')
+            for opt in opts_dict:
+                print(opt,opts_dict[opt])
+            print('')
+            for attr in attrs:
+                print('['+attr+']', attrs[attr]+':',attr_vals[attrs[attr]]) # [1] classID: Standing 
+            x = input('\nAttribute to Edit: ')
+
+            if not x: #Replays video
+                disp_vid(fpath_vid,playback_delay)
+            elif x == 'a': #Shows Next Video
+                i+= 1
+                break
+            elif x == 'd': #Shows Previous Video unless it has already been sorted
+                i-=1
+                break
+            elif x == 'b':
+                data_obj.is_bad()
+            elif x == 'q':
+                quest_info = input('\nNote on why its questionable: ')
+                data_obj.is_quest(quest_info)
+            elif x == 's':
+                constants = set_constants(constants) #initializes/updates constants
+                break
+            elif x =='f':
+                confirm = input('Are you sure?[y/n]: ')
+                if confirm == 'y':
+                    data_obj.re_name(data_dir,labeled_dir) #rename files & put them into labeled_data
+                    data_objs.append(data_obj) #append object for accessing later
+                    i+=1 
+                    break
+                else: continue
+            elif x == 'l':
+                restore(data_objs[-1],labeled_dir,data_dir) #restores previous file to original filename and path
+                restored = True #Flag that previous file has been restored
+                i-=1
+                break
+            else:
+                new_labels[attrs[x]]=edit_label(attrs[x])
+                set_labels = constants
+                set_labels.update(new_labels) #merge new labels into a temporary dictionary
+                data_obj.set_new_labels(set_labels) #update attributes in object
 
 
-# maybe define this within the data_file class
-def new_name(fname,classID,personID,roomID,dateStamp):
-    if '-' in fname:
-        if not fname.index('-') > 3:
-            splitNum = fname[:fname.index('-')]
-        else:
-            splitNum ='Split1'
-    else:
-        splitNum = 'Split1'
-    
-    if fname.endswith('.tensor'):
-        f_ext = '_joints.tensor'
-    elif fname.endswith('.avi'):
-        f_ext='.avi'
-    elif fname.endswith('.mp4'):
-        f_ext='.mp4'
-    camNum = fname[fname.index('cam'):fname.index('cam')+len('camX')]
-    fname_new = classID+'_'+personID+'_'+roomID+'_'+camNum+'_'+splitNum+'_'+dateStamp+'_'+f_ext
-    return fname_new
+
 
 def resize(img,size,offset=0):
     img = imutils.resize(img, height=size)
@@ -225,12 +301,15 @@ def disp_vid(fpath,playback_delay):
         ret,frame = cap.read()
         if ret:
             frame =resize(frame,256)
-            cv2.imshow(fpath,frame)
+            cv2.imshow('playback_delay: '+str(playback_delay)+' ms',frame)
         else: break
         cv2.waitKey(playback_delay)
     cap.release()
 
-def grab_files(root_dir): #creates matched lists of video and joints files
+def grab_files(root_dir): 
+# creates matched lists of video and joints files
+# don't know if this is still necessary
+# helps to filter '._' files in Mac OS and only sort through video/joint files
     no_joints_dir = os.path.join(root_dir,'no_joints')
     if os.path.exists(no_joints_dir):
         os.mkdir(no_joints_dir)
@@ -238,8 +317,7 @@ def grab_files(root_dir): #creates matched lists of video and joints files
     vid_files = []
     joints_files = []
     for file in all_files:
-        if '._' in file:
-            all_files.remove(file)
+        if file.startswith('._'):
             continue
         if file.endswith('.avi') or file.endswith('.mp4'):
             joints_file = file[:-len('.avi')]+'_joints.tensor' 
@@ -250,6 +328,7 @@ def grab_files(root_dir): #creates matched lists of video and joints files
             vid_files.append(file)
             joints_files.append(joints_file)
     return vid_files, joints_files
+
 
 
 if __name__ == '__main__':
