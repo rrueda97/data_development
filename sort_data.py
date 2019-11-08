@@ -3,14 +3,10 @@ import imutils
 import os
 import time
 import csv
+import sys
 
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
 roomID_labels = ['RRuedaBed','ATamGarage','ATwomblyMaster','NMousaBed','RRuedaLiving','JLeeBed']
-    #RRuedaBed = Ricky's Room BlackHorse
-    #ATamGarage = Alex's Garage
-    #ATwomblyMaster = Alistair's Master Room
-    #NMousaBed = Nael's Room BlackHorse
-    #RRuedaLiving = BlackHorse Living Room
 personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','DBerry','JAlvarenga','RBhardwaj']
 camID_labels= ['CamFront','CamBack','CamLeft','CamRight']#camera view wrt person
 splitNum_labels = ['split0','split1','split2']
@@ -20,11 +16,10 @@ clothing_labels = ['tshirt + pants','tshirt + shorts','longsleeve + pants','long
 gender_labels = ['male','female']
 labels_dict = {'classID':classID_labels,'personID':personID_labels,'roomID':roomID_labels,'camID':camID_labels,'splitNum':splitNum_labels,'position':position_labels,'clothing':clothing_labels,'gender': gender_labels}
 labels_dict.update(dict.fromkeys(['skinTone','lighting','roomInfo','zoom','vidSpeed','variance'],descrip_labels))
-
-#save as json?
+#save labels in json?
 
 class data_file:
-    #later it can initialize from csv info once it's been written to
+    #later it can initialize from csv info once it's been written to?
     def __init__(self,fname,root_dir,constants = None):
         self.fname = fname
         joints_path = os.path.join(root_dir,self.fname[:-len('.avi')]+'_joints.tensor')
@@ -66,9 +61,12 @@ class data_file:
             self.variance = None
             self.bad = False
             self.questionable = False
-
-    def is_bad(self):
+    def check(self):
+        self.bad_info = None
+        self.quest_info = None
+    def is_bad(self,bad_info=None):
         self.bad = True
+        self.bad_info
 
     def is_quest(self,quest_info = None):
         self.questionable = True
@@ -109,14 +107,13 @@ class data_file:
             f_ext='.avi'
         elif self.fname.endswith('.mp4'):
             f_ext='.mp4'
-        fname_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+f_ext
-        fname_joints_new = self.classID+'_'+self.personID+'_'+self.roomID+'_'+self.camID+'_'+self.splitNum+'_'+dateStamp+'_'+'joints.tensor'
+        fname_new = str(self.classID)+'_'+str(self.personID)+'_'+str(self.roomID)+'_'+str(self.camID)+'_'+str(self.splitNum)+'_'+dateStamp+f_ext
+        fname_joints_new = str(self.classID)+'_'+str(self.personID)+'_'+str(self.roomID)+'_'+str(self.camID)+'_'+str(self.splitNum)+'_'+dateStamp+'_'+'joints.tensor'
         return fname_new,fname_joints_new
 
-    def re_name(self,root_dir,labeled_dir,restored):
+    def re_name(self,root_dir,labeled_dir):
         #update filename attributes, store previous filename, rename files
-        if not restored:
-            self.prev_fname = self.fname #only update when NOT dealing with a restored file because os.rename() it will not find prev_fname in directory
+        self.prev_fname = self.fname 
         self.prev_fname_joints = self.fname[:-len('.avi')]+'_joints.tensor'
         self.fname,self.fname_joints = self.new_name()
         os.rename(os.path.join(root_dir,self.prev_fname),os.path.join(labeled_dir,self.fname))
@@ -124,12 +121,17 @@ class data_file:
             os.rename(os.path.join(root_dir,self.prev_fname_joints),os.path.join(labeled_dir,self.fname_joints))
 #############################################################################################################################
 #pseudo
-#def csv_write(csv_dir,data_objs):
-#   column_names = vars(data_objs[0])[0]
-#   for object in data_objs:
-#       data_dict=vars(object)
-#       row = someShit(data_dict)
-#       csv.write(row)
+def csv_write(csv_path,data_objs):
+    #Attibute Keys that 
+    data_dict = vars(data_objs[0])
+    #del data_dict[prev_fname_joints] #don't include this in csv 
+    col_names = list(data_dict.keys())
+    with open(csv_path,mode='w') as csv_file:
+        data_writer = csv.Dictwriter(csv_file,fieldnames=col_names)
+        data_writer.writeheader()
+        for data in data_objs:
+            data_writer.writerow(vars(data))
+    print('saved to',csv_path)
 
 def sort_attrs(data_obj): #creates dictionary where empty attributes of type None are first (have keys 0-n)
     sorted_dict = {}
@@ -189,25 +191,26 @@ def edit_label(attr):
     new_label_i = input('Select New Label: ')
     new_label = labels_dict[attr][int(new_label_i)]
     return new_label
+
 def restore(prev_data_obj,from_dir,to_dir):
     from_path = os.path.join(from_dir,prev_data_obj.fname)
     from_path_joints = os.path.join(from_dir,prev_data_obj.fname_joints)
     to_path = os.path.join(to_dir,prev_data_obj.prev_fname)
     to_path_joints = os.path.join(to_dir,prev_data_obj.prev_fname_joints)
     os.rename(from_path,to_path)
+    prev_data_obj.fname = prev_data_obj.prev_fname
     if prev_data_obj.has_joints:
         os.rename(from_path_joints,to_path_joints)
-def main_loop(data_dir):
-    restored = None #initialize restoring flag
-    constants = None #initialize with none
-    playback_delay = 10 #ms
+        prev_data_obj.fname_joints = prev_data_obj.prev_fname_joints
+def main_loop(data_dir,csv_path):
+    restored = None #initialize restored flag
+    constants = None #initialize with no constants
+    playback_delay = 100 #ms
     labeled_dir = os.path.join(data_dir,'labeled_data')
     if not os.path.exists(labeled_dir):
         os.mkdir(labeled_dir)
     bad_vid_dir = os.path.join(data_dir,'bad_videos')
     videos, joints = grab_files(data_dir)
-    renamed_vids= []
-    renamed_joints = []
     data_objs = [] 
     i = 0
     print('total videos:',len(videos))
@@ -230,13 +233,15 @@ def main_loop(data_dir):
             i += 1
             continue
         if not restored:
+            #print('set_labels before instantiating object:',set_labels)
+            #print('constants before instantiating object:',constants)
             data_obj = data_file(fname_vid,data_dir,constants)
         else:
             data_obj= data_objs.pop() #returns and removes last element of list
-        opts_dict = {'[enter]':'replay','[a]':'previous video','[d]':'next video','[s]':'set constant labels','[l]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'} 
+            restored = False
+        opts_dict = {'[save]':'save & exit','[enter]':'replay','[a]':'previous video','[d]':'next video','[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'} 
         new_labels = {}
         while True:
-            print(constants)
             attrs = sort_attrs(data_obj)
             attr_vals = vars(data_obj) #Dictionary with current attributes and labels
             print('\nfname:',data_obj.fname)
@@ -251,11 +256,9 @@ def main_loop(data_dir):
             if not x: #Replays video
                 disp_vid(fpath_vid,playback_delay)
             elif x == 'a': #Shows Next Video
-                restored = False
                 i+= 1
                 break
             elif x == 'd': #Shows Previous Video unless it has already been sorted
-                restored = False
                 i-=1
                 break
             elif x == 'b':
@@ -263,29 +266,33 @@ def main_loop(data_dir):
             elif x == 'q':
                 quest_info = input('\nNote on why its questionable: ')
                 data_obj.is_quest(quest_info)
-            elif x == 's':
-                restored = False
+            elif x == 'c':
                 constants = set_constants(constants) #initializes/updates constants
                 break
             elif x =='f':
                 confirm = input('Are you sure?[y/n]: ')
                 if confirm == 'y':
-                    data_obj.re_name(data_dir,labeled_dir,restored) #rename files & put them into labeled_data
+                    data_obj.re_name(data_dir,labeled_dir) #rename files & put them into labeled_data
+                    data_obj.check()
                     data_objs.append(data_obj) #append object for accessing later
                     i+=1 
-                    restored = False
                     break
                 else: continue
-            elif x == 'l':
+            elif x == 'z':
                 restore(data_objs[-1],labeled_dir,data_dir) #restores previous file to original filename and path
-                restored = True #Flag that previous file has been restored
+                restored = True
                 i-=1
                 break
+            elif x == 'save': #only use if you have already confirmed labels
+                csv_write(csv_path,data_objs) 
+                sys.exit()
+
             else:
                 new_labels[attrs[x]]=edit_label(attrs[x])
-                set_labels = constants
+                set_labels = constants.copy()
                 set_labels.update(new_labels) #merge new labels into a temporary dictionary
                 data_obj.set_new_labels(set_labels) #update attributes in object
+                print('constants after setting labels',constants)
 
 
 
@@ -347,4 +354,7 @@ def grab_files(root_dir):
 if __name__ == '__main__':
     dir_name = input('Directory to sort from:')
     dir_path = os.path.join(os.getcwd(),dir_name)
-    main_loop(dir_path)
+    csv_path = os.path.join(os.getcwd(),'labeled_data.csv')
+    if not os.path.exists(csv_path):
+        os.mkdir(csv_path)
+    main_loop(dir_path,csv_path)
