@@ -4,7 +4,6 @@ import os
 import time
 import csv
 import sys
-
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
 roomID_labels = ['RRuedaBed','ATamGarage','ATwomblyMaster','NMousaBed','RRuedaLiving','JLeeBed']
 personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','DBerry','JAlvarenga','RBhardwaj']
@@ -16,11 +15,9 @@ clothing_labels = ['tshirt + pants','tshirt + shorts','longsleeve + pants','long
 gender_labels = ['male','female']
 labels_dict = {'classID':classID_labels,'personID':personID_labels,'roomID':roomID_labels,'camID':camID_labels,'splitNum':splitNum_labels,'position':position_labels,'clothing':clothing_labels,'gender': gender_labels}
 labels_dict.update(dict.fromkeys(['skinTone','lighting','roomInfo','zoom','vidSpeed','variance'],descrip_labels))
-#save labels in json?
 
 
 class DataFile:
-    # later it can initialize from csv info once it's been written to?
     def __init__(self, file_name, root_dir, constants=None):
         self.fname = file_name
         joints_path = os.path.join(root_dir,self.fname[:-len('.avi')]+'_joints.tensor')
@@ -71,7 +68,7 @@ class DataFile:
         self.bad = True
         self.bad_info = bad_info 
 
-    def is_quest(self,quest_info = None):
+    def is_quest(self, quest_info = None):
         self.questionable = True
         self.quest_info = quest_info
 
@@ -80,7 +77,7 @@ class DataFile:
         self.quest_info = None
         self.bad = False
 
-    def set_new_labels(self,new_labels):
+    def set_new_labels(self, new_labels):
         for key in labels_dict: #set everything else to None  MOVE THIS INSIDE THE CLASS set_new_labels method
             if key not in new_labels:
                 new_labels[key] = None
@@ -108,16 +105,16 @@ class DataFile:
             f_ext='.mp4'
         fname_new = str(self.classID)+'_'+str(self.personID)+'_'+str(self.roomID)+'_'+str(self.camID)+'_'+str(self.splitNum)+'_'+dateStamp+f_ext
         fname_joints_new = str(self.classID)+'_'+str(self.personID)+'_'+str(self.roomID)+'_'+str(self.camID)+'_'+str(self.splitNum)+'_'+dateStamp+'_'+'joints.tensor'
-        return fname_new,fname_joints_new
+        return fname_new, fname_joints_new
 
-    def re_name(self,root_dir,labeled_dir):
+    def re_name(self, root_dir, labeled_dir):
         # update filename attributes, store previous filename, rename files
         self.prev_fname = self.fname 
         self.prev_fname_joints = self.fname[:-len('.avi')]+'_joints.tensor'
-        self.fname,self.fname_joints = self.new_name()
-        os.rename(os.path.join(root_dir,self.prev_fname),os.path.join(labeled_dir,self.fname))
+        self.fname, self.fname_joints = self.new_name()
+        os.rename(os.path.join(root_dir, self.prev_fname), os.path.join(labeled_dir, self.fname))
         if self.has_joints:
-            os.rename(os.path.join(root_dir,self.prev_fname_joints),os.path.join(labeled_dir,self.fname_joints))
+            os.rename(os.path.join(root_dir, self.prev_fname_joints), os.path.join(labeled_dir, self.fname_joints))
 
 
 def csv_write(csv_path, data_objs):
@@ -157,7 +154,7 @@ def set_constants(constants=None): #input previous set constants
     while True:
         constants_ls = []
         print('\nSelect Constant Attribute Labels')
-        for i,attr in enumerate(labels_dict):
+        for i, attr in enumerate(labels_dict):
             if attr in constants_dict:
                 constants_ls.append(attr)
                 print('['+str(i)+']',attr,':',constants_dict[attr]) #show constants that have been set
@@ -204,7 +201,7 @@ def set_constants(constants=None): #input previous set constants
 def edit_label(attr):
     while True:
         print('\nLabels for',attr)
-        for i,label in enumerate(labels_dict[attr]):
+        for i, label in enumerate(labels_dict[attr]):
             print('['+str(i)+']',label)
         new_label_i = input('Select New Label: ')
         if new_label_i.isnumeric():
@@ -379,7 +376,7 @@ def disp_vid(fpath, playback_delay):
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
-            frame = resize(frame,256)
+            frame = resize(frame, 256)
             cv2.imshow('playback_delay: '+str(playback_delay)+' ms',frame)
         else:
             break
@@ -387,10 +384,7 @@ def disp_vid(fpath, playback_delay):
     cap.release()
 
 
-def grab_files(root_dir): 
-# creates matched lists of video and joints files
-# don't know if this is still necessary
-# helps to filter '._' files in Mac OS and only sort through video/joint files
+def grab_files(root_dir):
     no_joints_dir = os.path.join(root_dir,'no_joints')
     all_files = os.listdir(root_dir)
     vid_files = []
@@ -404,7 +398,7 @@ def grab_files(root_dir):
             if not os.path.exists(joints_path):
                 if not os.path.exists(no_joints_dir):
                     os.mkdir(no_joints_dir)
-                os.rename(os.path.join(root_dir,file),os.path.join(no_joints_dir,file))
+                os.rename(os.path.join(root_dir, file), os.path.join(no_joints_dir, file))
                 print(file, 'has no joints')
                 continue
             vid_files.append(file)
