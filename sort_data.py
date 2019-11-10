@@ -120,17 +120,17 @@ class DataFile:
             os.rename(os.path.join(root_dir,self.prev_fname_joints),os.path.join(labeled_dir,self.fname_joints))
 
 
-def csv_write(csv_path,data_objs):
-    #Attibute Keys that 
+def csv_write(csv_path, data_objs):
+    file_empty = os.stat(csv_path).st_size == 0
     data_dict = vars(data_objs[0])
-    #del data_dict[prev_fname_joints] #don't include this in csv 
     col_names = list(data_dict.keys())
-    with open(csv_path,mode='a+') as csv_file:
-        data_writer = csv.DictWriter(csv_file,fieldnames=col_names)
-        data_writer.writeheader()
+    with open(csv_path, mode='a+') as csv_file:
+        data_writer = csv.DictWriter(csv_file, fieldnames=col_names)
+        if file_empty:
+            data_writer.writeheader()
         for data in data_objs:
             data_writer.writerow(vars(data))
-    print('saved to',csv_path)
+    print('saved to', csv_path)
 
 
 def sort_attrs(data_obj): #creates dictionary where empty attributes of type None are first (have keys 0-n)
@@ -138,7 +138,7 @@ def sort_attrs(data_obj): #creates dictionary where empty attributes of type Non
     sorted_ls = []
     attrs_dict = vars(data_obj)
     for attr in attrs_dict: #creates a list where empty attributes ( = None) are on top
-        if attr == 'fname' or attr =='has_joints' or attr == 'fname_joints' or attr == 'bad' or attr == 'questionable': #Don't include these attributes
+        if attr == 'fname' or attr == 'has_joints' or attr == 'fname_joints' or attr == 'bad' or attr == 'questionable': #Don't include these attributes
             continue
         if attrs_dict[attr] == None:
             sorted_ls.insert(0,attr)
