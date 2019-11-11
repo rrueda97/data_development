@@ -7,7 +7,7 @@ import sys
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
 roomID_labels = ['RRuedaBed','ATamGarage','ATwomblyMaster','NMousaBed','RRuedaLiving','JLeeBed']
 personID_labels = ['RRueda','JLee','ATwombly','ATam','VBaena','MMercurio','DBerry','JAlvarenga','RBhardwaj']
-camID_labels= ['CamFront','CamBack','CamLeft','CamRight']#camera view wrt person
+camID_labels = ['CamFront','CamBack','CamLeft','CamRight']#camera view wrt person
 splitNum_labels = ['split0','split1','split2']
 descrip_labels = ['low','medium','high']
 position_labels = ['center','right','left','top','bottom']
@@ -228,7 +228,7 @@ def restore(prev_data_obj,from_dir,to_dir):
         prev_data_obj.fname_joints = prev_data_obj.prev_fname_joints
 
 
-def preview(data_dir, playback_delay):
+def preview(data_dir, playback_delay = 10):
     videos, joints = grab_files(data_dir)
     i = 0
     while i < len(videos):
@@ -305,7 +305,7 @@ def main_loop(data_dir, csv_path):
             if not x:
                 disp_vid(fpath_vid, playback_delay)
             elif x == 'p':
-                preview(data_dir, playback_delay)
+                preview(data_dir)
                 break
             elif x == 'b':
                 data_obj.is_bad()
