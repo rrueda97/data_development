@@ -2,33 +2,61 @@
 Scripts for Data Collection, Annotation and Processing
 
 ## DataSets Summary:
-* real_w_tensors_all
-    * JLeeBed w JLee
-        * 04/2019 
-        * Bed Actions+Standing
-    * RRuedaLiving w RRueda
-        * 04/2019
-        * Falling
-    * RRuedaBed w RRueda+JLee+DBerry
-        * 06/2019
-        * Bed Actions
-    * RRuedaBed w VBaena
-        * 07/2019
-        * All Actions
-    * ATamGarage w ATam
-        * 07/2019
-        * All Actions
-    * AtwomblyMaster w Atwombly
-        * 08/2019)
-        * All Actions
-* older_data
-    * RRuedaLiving w RRueda+JiLee+RBhardwaj+JAlvarenga 
-        * 04??/2019
-        * Ground Actions+Standing+Falling
-* Test_Set_Original
-    * NMousaBed w MMercurio 
-        * 09/2019 
-        * GroundActions+BedActions
+* real_w_joints
+    * Falling
+        * RRuedaLiving w others (03/2019)
+        * RRuedaLiving w RRueda (04/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+    * Rolling_Bed
+        * JLeeBed w JLee, RRueda (04/2019)
+        * RRuedaBed w RRueda,JLee,DBerry (06/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+        * NMousaBed w MMercurio (08/2019)
+        * unlabled data
+    * Rolling_Ground
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+        * NMousaBed w MMercurio (08/2019)
+    * Sitting_Up
+        * JLeeBed w JLee, RRueda (04/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+        * NMousaBed w MMercurio (08/2019)
+        * unlabeled data
+    * Standing
+        * RRuedaLiving w others (03/2019)
+        * JLeeBed w JLee (04/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+    * Still_On_Bed
+        * JLeeBed w JLee, RRueda (04/2019)
+        * RRuedaBed w RRueda,JLee,DBerry (06/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+        * NMousaBed w MMercurio (08/2019)
+        * unlabeled data
+    * Still_On_Ground
+        * RRuedaLiving w others (03/2019)
+        * RRuedaLiving w RRueda (04/2019)
+        * RRuedaBed w VBaena (07/2019)
+        * ATamGarage w ATam (07/2019)
+        * ATwomblyMaster w ATwombly (08/2019)
+        * NMousaBed w MMercurio (08/2019)
+
+* liveset_w_joints
+    * RRuedaBed w RRueda (09-10/2019) 
+        * Rolling_Bed
+        * Sitting_Up
+        * Standing
+        * Still_On_Bed
 * Test_Set_fisheye_undistorted
     * collected in Tandem with Test_Set_Original
     * processed fisheye 
@@ -36,10 +64,6 @@ Scripts for Data Collection, Annotation and Processing
     * NMousaBed w MMercurio 
         * 08/2019 All Actions
     * Fisheye Distortion
-* liveset
-    * RRuedaBed w RRueda 
-        * 09-10/2019 
-        * BedActions+Standing
 
 
 ## Notes:
