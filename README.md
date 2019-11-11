@@ -50,21 +50,31 @@ Scripts for Data Collection, Annotation and Processing
         * ATamGarage w ATam (07/2019)
         * ATwomblyMaster w ATwombly (08/2019)
         * NMousaBed w MMercurio (08/2019)
-
+        
 * liveset_w_joints
     * RRuedaBed w RRueda (09-10/2019) 
         * Rolling_Bed
         * Sitting_Up
         * Standing
         * Still_On_Bed
-* Test_Set_fisheye_undistorted
-    * collected in Tandem with Test_Set_Original
-    * processed fisheye 
-* test_8_27_19
-    * NMousaBed w MMercurio 
-        * 08/2019 All Actions
-    * Fisheye Distortion
+        
+* NMousaBed_processed_fisheye
+    * processed fisheye, no joints
+    * NMousaBed w MMercurio (08/2019) 
+        * Rolling_Bed
+        * Rolling_Ground
+        * Sitting_Up
+        * Still_On_Bed
+        * Still_On_Ground
+* NMousaBed_fisheye
 
+    * fisheye distortion, no joints
+    * NMousaBed w MMercurio (08/2019) 
+        * Rolling_Bed
+        * Rolling_Ground
+        * Sitting_Up
+        * Still_On_Bed
+        * Still_On_Ground
 
 ## Notes:
 as you sort through data make note of things that call your attention that could be useful and suggest meta data that could be collected
