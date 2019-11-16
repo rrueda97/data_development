@@ -101,12 +101,15 @@ as you sort through data make note of things that call your attention that could
    * Low = Usual. (ex. a fall due to a collapse)
    * Medium = Slight off of action but still usual. (ex. a fall due to a collapse but still conscious)
    * High = Very unusual activity (ex. a fall but someone stops it with their hands)
-* CamID: Everyone's dataset will look different based on position of bed/floor and how they face the camera
-   * 
-* Position: How the person is located away from their center of the frame.
 * Zoom: 
    * Low: person is completely on frame, but way smaller
    * Medium: Person is completely on frame
-   * High: 
-* splitNum: 
+   * High: Person is on frame, but parts of head, feet, or legs are slightly on edges of frame
+* CamID: Think about the person's perspective of their camera and their roomset
+   * CamRight: Alex's Garage (the Side)
+   * CamFront: Alex's Garage (camera set on washing machine)
+   * CamBack: Alex's Garage (camera set on the door)
+* Position: How the person is located away from their center of the frame.
+
+* splitNum: Determined if the datasets are formed from a single cut (one long 30 sec video of a fall/ sittingup) or are individual actions (like standing)
 * roomInfo: How many objects are present in the surroundings aside from the bed itself.
