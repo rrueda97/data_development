@@ -326,10 +326,14 @@ def main_loop(data_dir, csv_path):
                 else:
                     continue
             elif x == 'z':
-                restore(data_objs[-1], labeled_dir, data_dir) #restores previous file to original filename and path
-                restored = True
-                i -= 1
-                break
+                if len(data_objs) > 0:
+                    restore(data_objs[-1], labeled_dir, data_dir) #restores previous file to original filename and path
+                    restored = True
+                    i -= 1
+                    break
+                else:
+                    print('no data sorted yet')
+                    break
             elif x == 'save': #only use if you have already confirmed labels
                 data_obj.re_name(data_dir, labeled_dir) #rename files & put them into labeled_data
                 data_obj.check()
