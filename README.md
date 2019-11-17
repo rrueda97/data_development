@@ -2,7 +2,7 @@
 Scripts for Data Collection, Annotation and Processing
 
 ## DataSets Summary:
-* real_w_joints (n = 22,602)
+* real_w_joints (n = 21, 750)
     * Falling (n = 1,520)
         * RRuedaLiving w others (03/2019)       (n = 217)
         * RRuedaLiving w RRueda (04/2019)       (n = 88)
@@ -10,7 +10,7 @@ Scripts for Data Collection, Annotation and Processing
         * ATamGarage w ATam (07/2019)           (n = 252)
         * ATwomblyMaster w ATwombly (08/2019)   (n = 564)
         
-    * Rolling_Bed (n = 5,145)
+    * Rolling_Bed (n = 4233)
         * JLeeBed w JLee, RRueda (04/2019)          (n = 481) 
         * RRuedaBed w RRueda,JLee,DBerry (06/2019)  (n = 979)
         * RRuedaBed w VBaena (07/2019)              (n = 818)
@@ -24,7 +24,7 @@ Scripts for Data Collection, Annotation and Processing
         * ATwomblyMaster w ATwombly (08/2019)   (n = 763)
         * NMousaBed w MMercurio (08/2019)       (n = 618)
         
-    * Sitting_Up (n = 3,746)
+    * Sitting_Up (n = 3,820)
         * RRuedaBed w JLee, RRueda (04/2019)     (n = 600)
         * JLeeBed w JLee (04/2019)                (n = 350)
         * RRuedaBed w VBaena (07/2019)          (n = 804)
@@ -32,14 +32,14 @@ Scripts for Data Collection, Annotation and Processing
         * ATwomblyMaster w ATwombly (08/2019)   (n = 767)
         * NMousaBed w MMercurio (08/2019)       (n = 535)
 
-    * Standing (n = 4,713)
+    * Standing (n = 4713)
         * RRuedaLiving w others (03/2019)       (n = 3,585)
         * RRuedaBed w VBaena (07/2019)          (n = 415)
         * JLeeBed w JLee (04/2019)              (n = 39)
         * ATamGarage w ATam (07/2019)           (n = 126)
         * ATwomblyMaster w ATwombly (08/2019)   (n = 548)
         
-    * Still_On_Bed (n = 3,314)
+    * Still_On_Bed (n = 3,292)
         * JLeeBed w JLee, RRueda (04/2019)          (n = 63)
         * RRuedaBed w RRueda,JLee,DBerry (06/2019)  (n = 620)
         * RRuedaBed w VBaena (07/2019)              (n = 829)
@@ -47,7 +47,7 @@ Scripts for Data Collection, Annotation and Processing
         * ATwomblyMaster w ATwombly (08/2019)       (n = 794)
         * NMousaBed w MMercurio (08/2019)           (n = 417)
 
-    * Still_On_Ground (n = 2,107)
+    * Still_On_Ground (n = 2,115)
         * RRuedaLiving w others (03/2019)           (n = 461)
         * RRuedaLiving w RRueda (04/2019)           (n = 51)
         * RRuedaBed w VBaena (07/2019)              (n = 411)
