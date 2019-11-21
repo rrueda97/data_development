@@ -121,16 +121,15 @@ class DataFile:
             os.rename(os.path.join(root_dir, self.prev_fname_joints), os.path.join(labeled_dir, self.fname_joints))
 
 
-def csv_write(csv_path, data_objs):
-    file_empty = os.stat(csv_path).st_size == 0
-    data_dict = vars(data_objs[0])
+def csv_write(csv_path, data_obj):
+    file_exists = os.path.isfile(csv_path)
+    data_dict = vars(data_obj)
     col_names = list(data_dict.keys())
     with open(csv_path, mode='a+') as csv_file:
         data_writer = csv.DictWriter(csv_file, fieldnames=col_names)
-        if file_empty:
+        if not file_exists:
             data_writer.writeheader()
-        for data in data_objs:
-            data_writer.writerow(vars(data))
+        data_writer.writerow(vars(data_obj))
     print('saved to', csv_path)
 
 
@@ -325,6 +324,7 @@ def main_loop(data_dir, csv_path):
                     data_obj.re_name(data_dir, labeled_dir)  # rename files & put them into labeled_data
                     data_obj.check()
                     data_objs.append(data_obj)  # append object for accessing later
+                    csv_write(csv_path, data_obj)
                     i += 1
                     break
                 else:
