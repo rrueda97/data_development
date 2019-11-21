@@ -110,7 +110,6 @@ as you sort through data make note of things that call your attention that could
    * Medium: Person is completely on frame
    * High: Person is on frame, but parts of head, feet, or legs are slightly on edges of frame
 * CamID: Think about the person's perspective of their camera and their roomset
-   * UPDATE: This section is vague due to how the person is oriented with respect to the camera. We are considering categorizing how the  person does an action based on their perspective (ex. Person falls to their right, so label orientation as right).
    * CamRight: Alex's Garage (the Side)
    * CamFront: Alex's Garage (camera set on washing machine)
    * CamBack: Alex's Garage (camera set on the door)
