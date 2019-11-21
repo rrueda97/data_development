@@ -13,7 +13,8 @@ descrip_labels = ['low','medium','high']
 position_labels = ['center','right','left','top','bottom']
 clothing_labels = ['tshirt + pants','tshirt + shorts','longsleeve + pants','longsleeve + shorts','tank + pants','tank + shorts']
 gender_labels = ['male','female']
-labels_dict = {'classID':classID_labels,'personID':personID_labels,'roomID':roomID_labels,'camID':camID_labels,'splitNum':splitNum_labels,'position':position_labels,'clothing':clothing_labels,'gender': gender_labels}
+displace_labels = ['front', 'back', 'left', 'right']
+labels_dict = {'classID':classID_labels,'personID':personID_labels,'roomID':roomID_labels,'camID':camID_labels,'splitNum':splitNum_labels,'position':position_labels,'clothing':clothing_labels,'gender': gender_labels, 'displacement': displace_labels}
 labels_dict.update(dict.fromkeys(['skinTone','lighting','roomInfo','zoom','vidSpeed','variance'],descrip_labels))
 
 
@@ -40,6 +41,7 @@ class DataFile:
             self.zoom = constants['zoom']
             self.vidSpeed = constants['vidSpeed']
             self.variance = constants['variance']
+            self.displacement = constants['displacement']
             self.bad = False
             self.questionable = False
         else:
@@ -57,6 +59,7 @@ class DataFile:
             self.zoom = None
             self.vidSpeed = None
             self.variance = None
+            self.displacement = None
             self.bad = False
             self.questionable = False
 
@@ -95,6 +98,7 @@ class DataFile:
         self.zoom = new_labels['zoom']
         self.vidSpeed = new_labels['vidSpeed']
         self.variance = new_labels['variance']
+        self.displacement = new_labels['displacement']
 
     def new_name(self):
         date_fmt = '%m-%d-%y-%H-%M-%S' # April 20th 2020 @ 1:05:30 pm = 04-20-20-13-05-30
