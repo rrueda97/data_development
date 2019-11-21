@@ -342,7 +342,7 @@ def main_loop(data_dir, csv_path):
                 data_obj.re_name(data_dir, labeled_dir) #rename files & put them into labeled_data
                 data_obj.check()
                 data_objs.append(data_obj)
-                csv_write(csv_path, data_objs)
+                csv_write(csv_path, data_obj)
                 sys.exit()
 
             elif x in attrs.keys():
