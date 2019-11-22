@@ -64,14 +64,15 @@ class DataFile:
             self.questionable = False
 
     def check(self):
-        self.bad_info = None
-        self.quest_info = None
+        if not self.bad or self.questionable:
+            self.bad_info = None
+            self.quest_info = None
 
-    def is_bad(self,bad_info=None):
+    def is_bad(self, bad_info=None):
         self.bad = True
         self.bad_info = bad_info 
 
-    def is_quest(self, quest_info = None):
+    def is_quest(self, quest_info=None):
         self.questionable = True
         self.quest_info = quest_info
 
@@ -291,7 +292,7 @@ def main_loop(data_dir, csv_path):
         else:
             data_obj = data_objs.pop() #returns and removes last element of list
             restored = False
-        opts_dict = {'[save]':'save & exit','[enter]':'replay','[p]':'preview videos', '[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
+        opts_dict = {'[exit]':'save & exit','[enter]':'replay','[p]':'preview videos', '[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
         new_labels = {}
         while True:
             attrs = sort_attrs(data_obj)
@@ -338,8 +339,8 @@ def main_loop(data_dir, csv_path):
                 else:
                     print('no data sorted yet')
                     break
-            elif x == 'save': #only use if you have already confirmed labels
-                data_obj.re_name(data_dir, labeled_dir) #rename files & put them into labeled_data
+            elif x == 'exit':
+                data_obj.re_name(data_dir, labeled_dir)
                 data_obj.check()
                 data_objs.append(data_obj)
                 csv_write(csv_path, data_obj)
