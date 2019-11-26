@@ -292,11 +292,12 @@ def main_loop(data_dir, csv_path):
         else:
             data_obj = data_objs.pop() #returns and removes last element of list
             restored = False
-        opts_dict = {'[exit]':'save & exit','[enter]':'replay','[p]':'preview videos', '[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
+        opts_dict = {'[exit]':'exit','[enter]':'replay','[p]':'preview videos', '[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
         new_labels = {}
         while True:
             attrs = sort_attrs(data_obj)
             attr_vals = vars(data_obj) #Dictionary with current attributes and labels
+            print('videos sorted:', len(os.listdir(labeled_dir)))
             print('\nfile name:', data_obj.fname)
             print('has joints:', data_obj.has_joints, '\n')
             for opt in opts_dict:
@@ -340,10 +341,6 @@ def main_loop(data_dir, csv_path):
                     print('no data sorted yet')
                     break
             elif x == 'exit':
-                data_obj.re_name(data_dir, labeled_dir)
-                data_obj.check()
-                data_objs.append(data_obj)
-                csv_write(csv_path, data_obj)
                 sys.exit()
 
             elif x in attrs.keys():
