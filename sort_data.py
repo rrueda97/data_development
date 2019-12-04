@@ -131,7 +131,7 @@ def csv_write(csv_file_path, data_obj):
         if not file_exists:
             data_writer.writeheader()
         data_writer.writerow(vars(data_obj))
-    print('saved to', csv_path)
+    print('saved to', csv_file_path)
 
 
 def csv_overwrite(csv_file_path):  # removes last row
@@ -268,7 +268,7 @@ def preview(data_dir, playback_delay = 10):
                 continue
 
 
-def main_loop(data_dir, csv_path):
+def main_loop(data_dir, csv_file_path):
     restored = None     # initialize restored flag
     constants = None    # initialize with no constants
     playback_delay = 50 #ms
@@ -337,7 +337,7 @@ def main_loop(data_dir, csv_path):
                     data_obj.re_name(data_dir, labeled_dir)  # rename files & put them into labeled_data
                     data_obj.check()
                     data_objs.append(data_obj)  # append object for accessing later
-                    csv_write(csv_path, data_obj)
+                    csv_write(csv_file_path, data_obj)
                     i += 1
                     break
                 else:
@@ -346,7 +346,7 @@ def main_loop(data_dir, csv_path):
                 if len(data_objs) > 0:
                     restore(data_objs[-1], labeled_dir, data_dir)  # restores previous file to original filename & path
                     restored = True
-                    csv_overwrite(csv_path)
+                    csv_overwrite(csv_file_path)
                     i -= 1
                     break
                 else:
