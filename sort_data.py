@@ -122,11 +122,11 @@ class DataFile:
             os.rename(os.path.join(root_dir, self.prev_fname_joints), os.path.join(labeled_dir, self.fname_joints))
 
 
-def csv_write(csv_path, data_obj):
-    file_exists = os.path.isfile(csv_path)
+def csv_write(csv_file_path, data_obj):
+    file_exists = os.path.isfile(csv_file_path)
     data_dict = vars(data_obj)
     col_names = list(data_dict.keys())
-    with open(csv_path, mode='a+') as csv_file:
+    with open(csv_file_path, mode='a+') as csv_file:
         data_writer = csv.DictWriter(csv_file, fieldnames=col_names)
         if not file_exists:
             data_writer.writeheader()
@@ -134,24 +134,35 @@ def csv_write(csv_path, data_obj):
     print('saved to', csv_path)
 
 
-def sort_attrs(data_obj): #creates dictionary where empty attributes of type None are first (have keys 0-n)
+def csv_overwrite(csv_file_path):  # removes last row
+    file_exists = os.path.isfile(csv_file_path)
+    with open(csv_file_path, mode='r') as csv_file:
+        reader = csv.reader(csv_file)
+        rows_list = list(reader)
+    rows_list.pop()
+    with open(csv_file_path, mode='w') as csv_file_overwrite:
+        writer = csv.writer(csv_file_overwrite)
+        writer.writerows(rows_list)
+
+
+def sort_attrs(data_obj):   # creates dictionary where empty attributes of type None are first (have keys 0-n)
     sorted_dict = {}
     sorted_ls = []
     attrs_dict = vars(data_obj)
-    for attr in attrs_dict: #creates a list where empty attributes ( = None) are on top
+    for attr in attrs_dict:  # creates a list where empty attributes ( = None) are on top
         if attr == 'fname' or attr == 'has_joints' or attr == 'fname_joints' or attr == 'bad' or attr == 'questionable': #Don't include these attributes
             continue
         if attrs_dict[attr] == None:
-            sorted_ls.insert(0,attr)
+            sorted_ls.insert(0, attr)
         else:
             sorted_ls.append(attr)
-    for item in sorted_ls: #dictionary with list indeces as keys 
+    for item in sorted_ls:  # dictionary with list indeces as keys
         sorted_dict[str(sorted_ls.index(item))] = item
     return sorted_dict
 
 
-def set_constants(constants=None): #input previous set constants
-    if constants == None:
+def set_constants(constants=None):  # input previous set constants
+    if not constants:
         constants_dict = {}
     else:
         constants_dict = constants
@@ -161,10 +172,10 @@ def set_constants(constants=None): #input previous set constants
         for i, attr in enumerate(labels_dict):
             if attr in constants_dict:
                 constants_ls.append(attr)
-                print('['+str(i)+']',attr,':',constants_dict[attr]) #show constants that have been set
+                print('['+str(i)+']', attr, ':', constants_dict[attr])  # show constants that have been set
             else:
                 constants_ls.append(attr)
-                print('['+str(i)+']',attr)
+                print('['+str(i)+']', attr)
         print('[q] Done')
         user_inp = input('\nSelect an Attribute: ')
         if user_inp == 'q':
@@ -220,12 +231,12 @@ def edit_label(attr):
     return new_label
 
 
-def restore(prev_data_obj,from_dir,to_dir):
-    from_path = os.path.join(from_dir,prev_data_obj.fname)
-    from_path_joints = os.path.join(from_dir,prev_data_obj.fname_joints)
-    to_path = os.path.join(to_dir,prev_data_obj.prev_fname)
-    to_path_joints = os.path.join(to_dir,prev_data_obj.prev_fname_joints)
-    os.rename(from_path,to_path)
+def restore(prev_data_obj, from_dir, to_dir):
+    from_path = os.path.join(from_dir, prev_data_obj.fname)
+    from_path_joints = os.path.join(from_dir, prev_data_obj.fname_joints)
+    to_path = os.path.join(to_dir, prev_data_obj.prev_fname)
+    to_path_joints = os.path.join(to_dir, prev_data_obj.prev_fname_joints)
+    os.rename(from_path, to_path)
     prev_data_obj.fname = prev_data_obj.prev_fname
     if prev_data_obj.has_joints:
         os.rename(from_path_joints,to_path_joints)
@@ -258,8 +269,8 @@ def preview(data_dir, playback_delay = 10):
 
 
 def main_loop(data_dir, csv_path):
-    restored = None #initialize restored flag
-    constants = None #initialize with no constants
+    restored = None     # initialize restored flag
+    constants = None    # initialize with no constants
     playback_delay = 50 #ms
     labeled_dir = os.path.join(data_dir, 'labeled_data')
     if not os.path.exists(labeled_dir):
@@ -292,11 +303,11 @@ def main_loop(data_dir, csv_path):
         else:
             data_obj = data_objs.pop() #returns and removes last element of list
             restored = False
-        opts_dict = {'[exit]':'exit','[enter]':'replay','[p]':'preview videos', '[c]':'set constant labels','[z]':'undo ','[f]':'confirm labels','[b]': 'bad','[q]':'questionable'}
+        opts_dict = {'[exit]': 'exit', '[enter]': 'replay', '[p]': 'preview videos', '[c]': 'set constant labels', '[z]':'undo ', '[f]': 'confirm labels', '[b]': 'bad', '[q]': 'questionable'}
         new_labels = {}
         while True:
             attrs = sort_attrs(data_obj)
-            attr_vals = vars(data_obj) #Dictionary with current attributes and labels
+            attr_vals = vars(data_obj)  # Dictionary with current attributes and labels
             print('videos sorted:', len(os.listdir(labeled_dir)))
             print('\nfile name:', data_obj.fname)
             print('has joints:', data_obj.has_joints, '\n')
@@ -333,8 +344,9 @@ def main_loop(data_dir, csv_path):
                     continue
             elif x == 'z':
                 if len(data_objs) > 0:
-                    restore(data_objs[-1], labeled_dir, data_dir) #restores previous file to original filename and path
+                    restore(data_objs[-1], labeled_dir, data_dir)  # restores previous file to original filename & path
                     restored = True
+                    csv_overwrite(csv_path)
                     i -= 1
                     break
                 else:
@@ -370,7 +382,7 @@ def resize(img, size, offset=0):
 def disp_vid(fpath, playback_delay):
     bad_video = False
     cap = cv2.VideoCapture(fpath)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT)) #Get frame count to make sure it is a 30 frame example
+    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get frame count to make sure it is a 30 frame example
     if frame_count != 30:
         print('Video is NOT 30 frames')
         bad_video = True
@@ -383,7 +395,7 @@ def disp_vid(fpath, playback_delay):
         ret, frame = cap.read()
         if ret:
             frame = resize(frame, 256)
-            cv2.imshow('playback_delay: '+str(playback_delay)+' ms',frame)
+            cv2.imshow('playback_delay: '+str(playback_delay)+' ms', frame)
         else:
             break
         cv2.waitKey(playback_delay)
@@ -391,7 +403,7 @@ def disp_vid(fpath, playback_delay):
 
 
 def grab_files(root_dir):
-    no_joints_dir = os.path.join(root_dir,'no_joints')
+    no_joints_dir = os.path.join(root_dir, 'no_joints')
     all_files = os.listdir(root_dir)
     vid_files = []
     joints_files = []
@@ -400,7 +412,7 @@ def grab_files(root_dir):
             continue
         if file.endswith('.avi') or file.endswith('.mp4'):
             joints_file = file[:-len('.avi')]+'_joints.tensor' 
-            joints_path = os.path.join(root_dir,joints_file) #check for associated joints file
+            joints_path = os.path.join(root_dir, joints_file)  # check for associated joints file
             if not os.path.exists(joints_path):
                 if not os.path.exists(no_joints_dir):
                     os.mkdir(no_joints_dir)
@@ -411,7 +423,7 @@ def grab_files(root_dir):
             joints_files.append(joints_file)
         else:
             if not file.endswith('tensor'):
-                print('not including:',file)
+                print('not including:', file)
     return vid_files, joints_files
 
 
@@ -422,5 +434,5 @@ if __name__ == '__main__':
         if not os.path.isdir(dir_path):
             print(dir_name, 'is not a directory\n')
             continue
-        csv_path = os.path.join(os.getcwd(), 'labeled_data.csv')
-        main_loop(dir_path, csv_path)
+        csv_filepath = os.path.join(os.getcwd(), 'labeled_data.csv')
+        main_loop(dir_path, csv_filepath)
