@@ -69,15 +69,16 @@ class DataFile:
             self.questionable = False
 
     def check(self):
-        if not self.bad or self.questionable:
+        if not self.bad:
             self.bad_info = None
+        if not self.questionable:
             self.quest_info = None
 
-    def is_bad(self, bad_info=None):
+    def is_bad(self, bad_info):
         self.bad = True
         self.bad_info = bad_info 
 
-    def is_quest(self, quest_info=None):
+    def is_quest(self, quest_info):
         self.questionable = True
         self.quest_info = quest_info
 
@@ -329,7 +330,8 @@ def main_loop(labeled_dir, data_dir, csv_path):
                 preview(data_dir)
                 break
             elif x == 'b':
-                data_obj.is_bad()
+                bad_info = input('\nNote on why its bad: ')
+                data_obj.is_quest(bad_info)
             elif x == 'q':
                 quest_info = input('\nNote on why its questionable: ')
                 data_obj.is_quest(quest_info)
