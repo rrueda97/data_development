@@ -331,7 +331,7 @@ def main_loop(labeled_dir, data_dir, csv_path):
                 break
             elif x == 'b':
                 bad_info = input('\nNote on why its bad: ')
-                data_obj.is_quest(bad_info)
+                data_obj.is_bad(bad_info)
             elif x == 'q':
                 quest_info = input('\nNote on why its questionable: ')
                 data_obj.is_quest(quest_info)
