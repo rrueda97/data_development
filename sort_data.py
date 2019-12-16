@@ -137,7 +137,7 @@ def csv_write(csv_file_path, data_obj):
     col_names = ['fname', 'has_joints', 'classID', 'personID', 'roomID', 'camID', 'splitNum', 'position', 'clothing',
                  'gender', 'skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance', 'displacement', 'bad',
                  'bad_info', 'questionable', 'quest_info', 'prev_fname', 'prev_fname_joints', 'fname_joints']
-    with open(csv_file_path, mode='a+', newline='') as csv_file:
+    with open(csv_file_path, mode='a+', newline='', encoding='utf-8') as csv_file:
         data_writer = csv.DictWriter(csv_file, fieldnames=col_names)
         if not file_exists:
             data_writer.writeheader()
@@ -151,7 +151,7 @@ def csv_overwrite(csv_file_path):  # removes last row
             reader = csv.reader(csv_file)
             rows_list = list(reader)
         rows_list.pop()
-        with open(csv_file_path, mode='w', newline='') as csv_file_overwrite:
+        with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file_overwrite:
             writer = csv.writer(csv_file_overwrite)
             writer.writerows(rows_list)
 
