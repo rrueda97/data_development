@@ -133,7 +133,10 @@ class DataFile:
 def csv_write(csv_file_path, data_obj):
     file_exists = os.path.isfile(csv_file_path)
     data_dict = vars(data_obj)
-    col_names = list(data_dict.keys())
+    # make a specific order of column names
+    col_names = ['fname', 'has_joints', 'classID', 'personID', 'roomID', 'camID', 'splitNum', 'position', 'clothing',
+                 'gender', 'skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance', 'displacement', 'bad',
+                 'bad_info', 'questionable', 'quest_info', 'prev_fname', 'prev_fname_joints', 'fname_joints']
     with open(csv_file_path, mode='a+', newline='') as csv_file:
         data_writer = csv.DictWriter(csv_file, fieldnames=col_names)
         if not file_exists:
