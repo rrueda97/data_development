@@ -68,6 +68,29 @@ class DataFile:
             self.bad = False
             self.questionable = False
 
+    def load_attr(self, labels_path):
+        with open(labels_path, mode='r', newline='', encoding='utf-8') as labels_csv:
+            reader = csv.DictReader(labels_csv)
+            for row in reader:
+                if row['fname'] == self.fname:
+                    self.classID = row['classID']
+                    self.personID = row['personID']
+                    self.roomID = row['roomID']
+                    self.camID = row['camID']
+                    self.splitNum = row['splitNum']
+                    self.position = row['position']
+                    self.clothing = row['clothing']
+                    self.gender = row['gender']
+                    self.skinTone = row['skinTone']
+                    self.lighting = row['lighting']
+                    self.roomInfo = row['roomInfo']
+                    self.zoom = row['zoom']
+                    self.vidSpeed = row['vidSpeed']
+                    self.variance = row['variance']
+                    self.displacement = row['displacement']
+                    self.bad = row['bad']
+                    self.questionable = row['questionable']
+
     def check(self):
         if not self.bad:
             self.bad_info = None
@@ -147,7 +170,7 @@ def csv_write(csv_file_path, data_obj):
 
 def csv_overwrite(csv_file_path):  # removes last row
     if os.path.isfile(csv_file_path):
-        with open(csv_file_path, mode='r', newline='') as csv_file:
+        with open(csv_file_path, mode='r', newline='', encoding='utf-8') as csv_file:
             reader = csv.reader(csv_file)
             rows_list = list(reader)
         rows_list.pop()
@@ -309,6 +332,7 @@ def main_loop(labeled_dir, data_dir, csv_path):
             continue
         if not restored:
             data_obj = DataFile(fname_vid, data_dir, constants)
+            data_obj.load_attr(csv_path)
         else:
             data_obj = data_objs.pop()
             restored = False
