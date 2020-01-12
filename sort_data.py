@@ -332,7 +332,8 @@ def main_loop(labeled_dir, data_dir, csv_path):
             continue
         if not restored:
             data_obj = DataFile(fname_vid, data_dir, constants)
-            data_obj.load_attr(csv_path)
+            if os.path.exists(csv_path):
+                data_obj.load_attr(csv_path)
         else:
             data_obj = data_objs.pop()
             restored = False
@@ -341,7 +342,10 @@ def main_loop(labeled_dir, data_dir, csv_path):
         while True:
             attrs = sort_attrs(data_obj)
             attr_vals = vars(data_obj)  # Dictionary with current attributes and labels
-            print('videos sorted:', len([f for f in os.listdir(labeled_dir) if f.endswith('.avi') and f[:2] != '._']))
+            try:
+                print('videos sorted:', len([f for f in os.listdir(labeled_dir) if f.endswith('.avi') and f[:2] != '._']))
+            except FileNotFoundError:
+                print('videos sorted: 0')
             print('\nfile name:', data_obj.fname)
             print('has joints:', data_obj.has_joints, '\n')
             for opt in opts_dict:
@@ -464,12 +468,16 @@ if __name__ == '__main__':
     while True:
         dir_name = input('Directory to sort from:')
         dir_path = os.path.join(os.getcwd(), dir_name)
-        labeled_name = input('Specify path to labeled data folder: CurrentDir/')
-        labeled_path = os.path.join(os.getcwd(), labeled_name)
         if not os.path.isdir(dir_path):
             print(dir_name, 'is not a directory\n')
             continue
-        csv_filepath = os.path.join(os.getcwd(), 'labeled_data.csv')
+        labeled_name = input('Specify path to labeled data folder: CurrentDir/')
+        labeled_path = os.path.join(os.getcwd(), labeled_name)
+
+        csv_fname = input('csv path: CurDir/')
+        csv_filepath = os.path.join(os.getcwd(), csv_fname)
+        if not os.path.exists(csv_filepath):
+            print('\ncsv path does not exist\n')
         main_loop(labeled_path, dir_path, csv_filepath)
         while True:
             inp = input('\n[s] keep sorting\n[q] exit\n:')
