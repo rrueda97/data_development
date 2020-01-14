@@ -16,7 +16,7 @@ position_labels = ['center', 'right', 'left', 'top', 'bottom']
 clothing_labels = ['tshirt + pants', 'tshirt + shorts', 'longsleeve + pants', 'longsleeve + shorts', 'tank + pants',
                    'tank + shorts']
 gender_labels = ['male', 'female']
-displace_labels = ['front', 'back', 'left', 'right']
+displace_labels = ['front', 'back', 'left', 'right', 'clockwise', 'counterclockwise']
 labels_dict = {'classID': classID_labels, 'personID': personID_labels, 'roomID': roomID_labels, 'camID': camID_labels,
                'splitNum': splitNum_labels, 'position': position_labels, 'clothing': clothing_labels, 'gender':
                    gender_labels, 'displacement': displace_labels}
@@ -89,7 +89,11 @@ class DataFile:
                     self.variance = row['variance']
                     self.displacement = row['displacement']
                     self.bad = row['bad']
+                    if row['bad'] == 'TRUE' or row['bad'] == 'True':
+                        self.bad_info = row['bad_info']
                     self.questionable = row['questionable']
+                    if row['questionable'] == 'TRUE' or row['questionable'] == 'True':
+                        self.quest_info = row['quest_info']
 
     def check(self):
         if not self.bad:
@@ -471,13 +475,11 @@ if __name__ == '__main__':
         if not os.path.isdir(dir_path):
             print(dir_name, 'is not a directory\n')
             continue
-        labeled_name = input('Specify path to labeled data folder: CurrentDir/')
+        labeled_name = input('Create a labeled data folder: CurrentDir/')
         labeled_path = os.path.join(os.getcwd(), labeled_name)
 
-        csv_fname = input('csv path: CurDir/')
+        csv_fname = input('Create a labels csv file: CurDir/')
         csv_filepath = os.path.join(os.getcwd(), csv_fname)
-        if not os.path.exists(csv_filepath):
-            print('\ncsv path does not exist\n')
         main_loop(labeled_path, dir_path, csv_filepath)
         while True:
             inp = input('\n[s] keep sorting\n[q] exit\n:')
