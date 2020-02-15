@@ -477,7 +477,6 @@ if __name__ == '__main__':
             continue
         labeled_name = input('Create a labeled data folder: CurrentDir/')
         labeled_path = os.path.join(os.getcwd(), labeled_name)
-
         csv_fname = input('Create a labels csv file: CurDir/')
         csv_filepath = os.path.join(os.getcwd(), csv_fname)
         main_loop(labeled_path, dir_path, csv_filepath)
