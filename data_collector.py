@@ -141,11 +141,11 @@ class Video:
 					frame_i -= 5
 			elif k == ord('0'):  # start frame
 				action_start = frame_i
-				print(f'action started at frame {frame_i+1}/{frame_count}')
+				print(f'\n\naction started at frame {frame_i+1}/{frame_count}')
 			elif k == ord('1'):
 				if action_end == None:
 					action_end = frame_i
-					print(f'action ended at frame {frame_i + 1}/{frame_count}')
+					print(f'\n\naction ended at frame {frame_i + 1}/{frame_count}')
 			elif k == 27:  # ESC to exit
 				cv2.destroyAllWindows()
 				break
@@ -166,11 +166,11 @@ def collect_data(collections, collection_time, delay):
 		os.mkdir(path)
 	timer = Timer(set_time_min=collection_time)
 	for i in range(collections):
-		cam = Camera(src=0, fps=10.0, frame_width=640, frame_height=480)
+		cam = Camera(src=0, fps=10.0, frame_width=1920, frame_height=1080)
 		cam.stream(timer, display=True)
 		video_writer = Video(path, cam)
 		t_start = time.time()
-		print(f'next collection in {delay*60} seconds...\n')
+		print(f'\n\nnext collection in {delay*60} seconds...\n')
 		while(time.time() < t_start+(delay*60)):
 			pass
 		timer.reset()
