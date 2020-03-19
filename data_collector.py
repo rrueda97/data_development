@@ -44,14 +44,29 @@ class Camera:
 
 class Video:
 	def __init__(self, path, camera: Camera=None):
+		self.path = path
 		if camera is None and os.path.exists(path):
-			self.load(path)
+			self.load(self.path)
 		else:
-			str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(camera.frames[0][1]))
-			str2 = time.strftime('to_%H-%M-%S.avi', time.localtime(camera.frames[-1][1]))
-			video_path = os.path.join(path, str1+str2)
-			frames = [frame[0] for frame in camera.frames]
-			self.write(video_path, frames, camera.fps, camera.frame_size)
+			self.camera_stream = camera
+
+	def write_stream(self, camera):
+		str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(camera.frames[0][1]))
+		str2 = time.strftime('to_%H-%M-%S.avi', time.localtime(camera.frames[-1][1]))
+		video_path = os.path.join(self.path, str1 + str2)
+		frames = [frame[0] for frame in camera.frames]
+		self.write(video_path, frames, camera.fps, camera.frame_size)
+
+	def split(self, path, camera):
+		frames = camera.frames
+		n = 30
+		split_frames = [frames[i*n : (i+1)*n] for i in range((len(frames) + n - 1)//n)]
+		for frames_list in split_frames:
+			str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(frames_list[0][1]))
+			str2 = time.strftime('to_%H-%M-%S.avi', time.localtime(frames_list[-1][1]))
+			video_path = os.path.join(path, str1 + str2)
+			write_frames = [frame[0] for frame in frames_list]
+			self.write(video_path, write_frames, camera.fps, camera.frame_size)
 
 	def label(self, video_path, frame_start, frame_end):
 		label = None
@@ -160,15 +175,18 @@ def view_data():
 	path = os.path.join(os.getcwd(), 'data_collector_videos')
 	video_writer = Video(path)
 
+
 def collect_data(collections, collection_time, delay):
 	path = os.path.join(os.getcwd(), 'data_collector_videos')
 	if not os.path.exists(path):
 		os.mkdir(path)
 	timer = Timer(set_time_min=collection_time)
 	for i in range(collections):
-		cam = Camera(src=0, fps=10.0, frame_width=1920, frame_height=1080)
+		cam = Camera(src=0, fps=10.0, frame_width=640, frame_height=480)
 		cam.stream(timer, display=True)
 		video_writer = Video(path, cam)
+		# video_writer.write_stream(cam)
+		video_writer.split(path, cam)
 		t_start = time.time()
 		print(f'\n\nnext collection in {delay*60} seconds...\n')
 		while(time.time() < t_start+(delay*60)):
@@ -177,6 +195,6 @@ def collect_data(collections, collection_time, delay):
 
 
 if __name__ == '__main__':
-	collect_data(collections=7, collection_time=0.25, delay=0.5)
-	view_data()
+	collect_data(collections=1, collection_time=0.5, delay=0.1)
+	# view_data()
 
