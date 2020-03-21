@@ -452,16 +452,16 @@ def grab_files(root_dir):
         if file.startswith('._'):
             continue
         if file.endswith('.avi') or file.endswith('.mp4'):
-            joints_file = file[:-len('.avi')]+'_joints.tensor' 
-            joints_path = os.path.join(root_dir, joints_file)  # check for associated joints file
-            if not os.path.exists(joints_path):
-                if not os.path.exists(no_joints_dir):
-                    os.mkdir(no_joints_dir)
-                os.rename(os.path.join(root_dir, file), os.path.join(no_joints_dir, file))
-                print(file, 'has no joints')
-                continue
+            # joints_file = file[:-len('.avi')]+'_joints.tensor'
+            # joints_path = os.path.join(root_dir, joints_file)  # check for associated joints file
+            # if not os.path.exists(joints_path):
+            #     if not os.path.exists(no_joints_dir):
+            #         os.mkdir(no_joints_dir)
+            #     os.rename(os.path.join(root_dir, file), os.path.join(no_joints_dir, file))
+            #     print(file, 'has no joints')
+            #     continue
             vid_files.append(file)
-            joints_files.append(joints_file)
+            # joints_files.append(joints_file)
         else:
             if not file.endswith('tensor'):
                 print('not including:', file)
