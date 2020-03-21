@@ -319,9 +319,9 @@ def main_loop(labeled_dir, data_dir, csv_path):
     while i < len(videos):
         cv2.destroyAllWindows()
         fname_vid = videos[i]
-        fname_joints = joints[i]
+        # fname_joints = joints[i]
         fpath_vid = os.path.join(data_dir, fname_vid)
-        fpath_joints = os.path.join(data_dir, fname_joints)
+        # fpath_joints = os.path.join(data_dir, fname_joints)
         if not os.path.exists(fpath_vid):
             print("can't replay what has already been sorted")
             i += 1
@@ -331,7 +331,7 @@ def main_loop(labeled_dir, data_dir, csv_path):
             if not os.path.exists(bad_vid_dir):
                 os.mkdir(bad_vid_dir)
             os.rename(fpath_vid, bad_vid_dir)
-            os.rename(fpath_joints, bad_vid_dir)
+            # os.rename(fpath_joints, bad_vid_dir)
             i += 1
             continue
         if not restored:
@@ -469,6 +469,7 @@ def grab_files(root_dir):
 
 
 if __name__ == '__main__':
+    # TODO: don't exclude files without joints
     while True:
         dir_name = input('Directory to sort from:')
         dir_path = os.path.join(os.getcwd(), dir_name)
