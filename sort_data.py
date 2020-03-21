@@ -330,7 +330,7 @@ def main_loop(labeled_dir, data_dir, csv_path):
         if bad_video:
             if not os.path.exists(bad_vid_dir):
                 os.mkdir(bad_vid_dir)
-            os.rename(fpath_vid, bad_vid_dir)
+            # os.rename(fpath_vid, bad_vid_dir)
             # os.rename(fpath_joints, bad_vid_dir)
             i += 1
             continue
