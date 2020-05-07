@@ -4,6 +4,7 @@ import os
 import time
 import csv
 import sys
+import pandas as pd
 
 # All Labels: Subject to Change
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
@@ -21,6 +22,87 @@ labels_dict = {'classID': classID_labels, 'personID': personID_labels, 'roomID':
                'splitNum': splitNum_labels, 'position': position_labels, 'clothing': clothing_labels, 'gender':
                    gender_labels, 'displacement': displace_labels}
 labels_dict.update(dict.fromkeys(['skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance'], descrip_labels))
+
+
+class DataObject:
+    def __init__(self, file_name: str, root_dir: str, labels_path:str, constants: dict = None):
+        joints_path = os.path.join(root_dir, self.fname[:-len('.avi')]+'_joints.tensor')  # check for joints
+        if os.path.exists(joints_path):
+            self.has_joints = True
+        else:
+            self.has_joints = False
+
+        all_labels_df = pd.read_csv(labels_path)
+        if file_name in all_labels_df.fname.to_list():  # load labels from csv if video has already been labeled
+            labels_df = all_labels_df.loc[all_labels_df['fname'] == file_name]
+            labels_df = labels_df.where(pd.notnull(labels_df), None)  # turning nans to None types
+            loaded_labels = labels_df.to_dict('records')[0]
+            self.set_labels(loaded_labels)
+        elif constants:  # load from constants
+            self.set_labels(constants)
+            self.bad = False
+            self.questionable = False
+            self.prev_fname = None
+            self.prev_fname_joints = None
+        else:  # load empty
+            self.classID = None
+            self.personID = None
+            self.roomID = None
+            self.camID = None
+            self.splitNum = None
+            self.position = None
+            self.clothing = None
+            self.gender = None
+            self.skinTone = None
+            self.lighting = None
+            self.roomInfo = None
+            self.zoom = None
+            self.vidSpeed = None
+            self.variance = None
+            self.displacement = None
+            self.bad = False
+            self.questionable = False
+            self.prev_fname = None
+            self.prev_fname_joints = None
+
+    def set_labels(self, labels_dictionary: dict):
+        for attr in labels_dictionary:
+            setattr(self, attr, labels_dictionary[attr])
+
+    def new_name(self):
+        dateStamp = time.strftime('%m-%d-%y-%H-%M-%S')  # April 20th 2020 @ 1:05:30 pm = 04-20-20-13-05-30
+        if self.fname.endswith('.avi'):
+            f_ext = '.avi'
+        elif self.fname.endswith('.mp4'):
+            f_ext = '.mp4'
+        fname_new = f'{self.classID}_{self.personID}_{self.roomID}_{self.camID}_{self.splitNum}_{dateStamp}{f_ext}'
+        if self.has_joints:
+            fname_joints_new = fname_new[:-len(f_ext)]+'_joints.tensor'
+        else:
+            fname_joints_new = None
+        return fname_new, fname_joints_new
+
+    def re_name(self, root_dir, labeled_dir):
+        if not os.path.exists(labeled_dir):
+            os.mkdir(labeled_dir)
+        # update filename attributes, store previous filename, rename files
+        self.prev_fname = self.fname
+        if self.has_joints:
+            self.prev_fname_joints = self.fname[:-len('.avi')]+'_joints.tensor'
+        else:
+            self.prev_fname_joints = None
+        self.fname, self.fname_joints = self.new_name()
+        os.rename(os.path.join(root_dir, self.prev_fname), os.path.join(labeled_dir, self.fname))
+        if self.has_joints:
+            os.rename(os.path.join(root_dir, self.prev_fname_joints), os.path.join(labeled_dir, self.fname_joints))
+
+    def is_bad(self, bad_info):
+        self.bad = True
+        self.bad_info = bad_info
+
+    def is_quest(self, quest_info):
+        self.questionable = True
+        self.quest_info = quest_info
 
 
 class DataFile:
@@ -48,7 +130,9 @@ class DataFile:
             self.variance = constants['variance']
             self.displacement = constants['displacement']
             self.bad = False
+            self.bad_info = None
             self.questionable = False
+            self.quest_info = None
         else:
             self.classID = None
             self.personID = None
@@ -66,7 +150,9 @@ class DataFile:
             self.variance = None
             self.displacement = None
             self.bad = False
+            self.bad_info = None
             self.questionable = False
+            self.quest_info = None
 
     def load_attr(self, labels_path):
         with open(labels_path, mode='r', newline='', encoding='utf-8') as labels_csv:
