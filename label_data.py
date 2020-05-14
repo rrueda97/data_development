@@ -2,7 +2,6 @@ import cv2
 import imutils
 import os
 import time
-import csv
 import sys
 import pandas as pd
 
@@ -19,14 +18,14 @@ clothing_labels = ['tshirt + pants', 'tshirt + shorts', 'longsleeve + pants', 'l
 gender_labels = ['male', 'female']
 displace_labels = ['front', 'back', 'left', 'right', 'clockwise', 'counterclockwise']
 ALL_LABELS = {'classID': classID_labels, 'personID': personID_labels, 'roomID': roomID_labels, 'camID': camID_labels,
-               'splitNum': splitNum_labels, 'position': position_labels, 'clothing': clothing_labels, 'gender':
-                   gender_labels, 'displacement': displace_labels}
+              'splitNum': splitNum_labels, 'position': position_labels, 'clothing': clothing_labels,
+              'gender': gender_labels, 'displacement': displace_labels}
 ALL_LABELS.update(dict.fromkeys(['skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance'], descrip_labels))
 
 
 class DataObject:
     """Holds meta data of a video, loads and saves to a csv file"""
-    def __init__(self, file_name: str, root_dir: str, labels_path:str, constants: dict = None):
+    def __init__(self, file_name: str, root_dir: str, labels_path: str, constants: dict = None):
         self.fname = file_name
         joints_path = os.path.join(root_dir, self.fname[:-len('.avi')]+'_joints.tensor')  # check for joints
         if os.path.exists(joints_path):
@@ -291,7 +290,7 @@ def preview(data_dir):
                 continue
 
 
-def sort_data(labeled_dir, data_dir, csv_path):
+def label_data(labeled_dir, data_dir, csv_path):
     labeled_count = 0
     constants = None  # initialize with no constants
     videos = [f for f in os.listdir(data_dir) if not f.startswith('._') and (f.endswith('.avi') or f.endswith('.mp4'))]
@@ -430,7 +429,7 @@ def main():
         labeled_path = os.path.join(os.getcwd(), labeled_name)
         csv_fname = input('Create/Select a labels csv file: CurDir/')
         csv_fpath = os.path.join(os.getcwd(), csv_fname)
-        sort_data(labeled_path, dir_path, csv_fpath)
+        label_data(labeled_path, dir_path, csv_fpath)
         while True:
             inp = input('\n[s] keep sorting\n[q] exit\n:')
             if inp == 's':

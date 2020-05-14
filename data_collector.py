@@ -1,6 +1,15 @@
 import cv2
 import os
 import time
+import imutils
+
+def resize(img, size, offset=0):
+    img = imutils.resize(img, height=size)
+    y, x = img.shape[0], img.shape[1]
+    x_center = int(x/2 + offset)
+    y_center = int(y/2)
+    img = img[(y_center-size//2):(y_center+size//2), (x_center-size//2):(x_center+size//2)]
+    return img
 
 
 class Timer:
@@ -32,7 +41,8 @@ class Camera:
             ret, frame = self.cam_object.read()
             if ret:
                 if display is True:
-                    cv2.imshow('camera display', frame)
+                    frame_square = resize(frame, 480)
+                    cv2.imshow('camera display', frame_square)
                     k = cv2.waitKey(1)
                     if k == 27:  # Press ESC to exit
                         break
@@ -51,16 +61,16 @@ class Video:
 
     def write_stream(self, camera):
         str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(camera.frames[0][1]))
-        str2 = time.strftime('to_%H-%M-%S.avi', time.localtime(camera.frames[-1][1]))
+        str2 = time.strftime('to_%H-%M-%S_full_stream.avi', time.localtime(camera.frames[-1][1]))
         video_path = os.path.join(self.path, str1 + str2)
         frames = [frame[0] for frame in camera.frames]
         self.write(video_path, frames, camera.fps, camera.frame_size)
 
     def split(self, path, camera):
+        low_fps = 10.  # down sample to this fps
         frames = camera.frames
-        if camera.fps == 30:  # down sample to lower fps
-            low_fps = 10
-            frames = frames[0::round(30/low_fps)]
+        if camera.fps > low_fps:
+            frames = frames[0::round(camera.fps/low_fps)]
         n = 30  # frames per example
         split_frames = [frames[i*n: (i+1)*n] for i in range((len(frames) + n - 1)//n)]
         for frames_list in split_frames:
@@ -68,7 +78,7 @@ class Video:
             str2 = time.strftime('to_%H-%M-%S.avi', time.localtime(frames_list[-1][1]))
             video_path = os.path.join(path, str1 + str2)
             write_frames = [frame[0] for frame in frames_list]
-            self.write(video_path, write_frames, camera.fps, camera.frame_size)
+            self.write(video_path, write_frames, low_fps, camera.frame_size)
 
     def label(self, video_path, frame_start, frame_end):
         label = None
@@ -178,25 +188,27 @@ def view_data():
     video_writer = Video(path)
 
 
-def collect_data(collections, collection_time, delay):
-    path = os.path.join(os.getcwd(), 'data_collector_videos')
+def collect_data(collections, collection_time, delay, video_path):
+    path = video_path
     if not os.path.exists(path):
         os.mkdir(path)
     timer = Timer(set_time_min=collection_time)
     for i in range(collections):
-        cam = Camera(src=0, fps=10.0, frame_width=640, frame_height=480)
+        cam = Camera(src=0, fps=30.0, frame_width=640, frame_height=480)
         cam.stream(timer, display=True)
+        print('\nwriting videos...')
         video_writer = Video(path, cam)
         video_writer.write_stream(cam)
         video_writer.split(path, cam)
-        if collections > 1:
+        if i+1 != collections:
             t_start = time.time()
             print(f'\n\nnext collection in {delay*60} seconds...\n')
-            while time.time() < t_start+delay*60:
+            while time.time() < t_start + delay*60:
                 pass
             timer.reset()
 
 
 if __name__ == '__main__':
-    collect_data(collections=10, collection_time=1, delay=0.25)
+    videos_path = '/Volumes/500GB/RDA_64GB_Backup/data_management/data_collector_videos'
+    collect_data(collections=1, collection_time=10, delay=0.25, video_path=videos_path)
     # view_data()
