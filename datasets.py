@@ -51,9 +51,41 @@ class DataSet:
             ax.set_title('Distribution for all classes')
         return ax
 
+    def check_videos(self, video_dirs: list, move_to_dir: str = None):
+        """method to check if there are videos not included in the dataset csv"""
+        all_videos = []
+        for directory in video_dirs:
+            if not os.path.exists(directory):
+                raise FileExistsError(f'{directory} does not exist')
+            if not os.path.isdir(directory):
+                raise NotADirectoryError(f'{directory} is not a directory')
+            videos_in_dir = [f for f in os.listdir(directory) if f.endswith('.avi') or f.endswith('.mp4')]
+            all_videos = all_videos + videos_in_dir
+
+        videos_in_dataset = self.labels_df['fname'].to_list()
+        prev_videos_in_dataset = self.labels_df['prev_fname'].to_list()
+        not_in_dataset = list(set(all_videos) - set(videos_in_dataset)) #- set(prev_videos_in_dataset))
+        not_in_dataset_paths = []
+        for dir in video_dirs:
+            for vid in not_in_dataset:
+                if vid in os.listdir(dir):
+                    not_in_dataset_paths.append(os.path.join(dir, vid))
+        if move_to_dir is not None:
+            if not os.path.exists(move_to_dir):
+                os.mkdir(move_to_dir)
+            for vid_path in not_in_dataset_paths:
+                os.rename(vid_path, os.path.join(move_to_dir, os.path.basename(vid_path)))
+        return not_in_dataset_paths
+
+
 if __name__ == '__main__':
-    csv_path = os.path.join(os.getcwd(), 'datasets/test_dataset/test_labels.csv')
+    csv_path = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/ricky_room_IR_labels.csv')
     dataset = DataSet(csv_path)
-    hist_ax= dataset.vis_feature(feature='classID', normalize=False)
+    videos_path0 = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/half_labeled')
+    videos_path1 = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/labeled')
+    missed_videos_path = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/not_in_csv')
+    not_in_csv = dataset.check_videos([videos_path0, videos_path1], move_to_dir=missed_videos_path)
+
+    # hist_ax = dataset.vis_feature(feature='classID', normalize=False)
 
 
