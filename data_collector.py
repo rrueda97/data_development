@@ -209,6 +209,6 @@ def collect_data(collections, collection_time, delay, video_path):
 
 
 if __name__ == '__main__':
-    videos_path = '/Volumes/500GB/RDA_64GB_Backup/data_management/data_collector_videos'
-    collect_data(collections=1, collection_time=10, delay=0.25, video_path=videos_path)
+    videos_path = '/Volumes/500GB/data_collector_videos'
+    collect_data(collections=10, collection_time=1, delay=0.25, video_path=videos_path)
     # view_data()

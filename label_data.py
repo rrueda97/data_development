@@ -22,6 +22,8 @@ ALL_LABELS = {'classID': classID_labels, 'personID': personID_labels, 'roomID': 
               'gender': gender_labels, 'displacement': displace_labels}
 ALL_LABELS.update(dict.fromkeys(['skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance'], descrip_labels))
 
+SAVED_CAPTIONS = []
+
 
 class DataObject:
     """Holds meta data of a video, loads and saves to a csv file"""
@@ -97,15 +99,21 @@ class DataObject:
         for attr in labels_dictionary:
             setattr(self, attr, labels_dictionary[attr])
 
-    def new_name(self):
-        dateStamp = time.strftime('%m-%d-%y-%H-%M-%S')  # April 20th 2020 @ 1:05:30 pm = 04-20-20-13-05-30
-        if self.fname.endswith('.avi'):
-            f_ext = '.avi'
-        elif self.fname.endswith('.mp4'):
-            f_ext = '.mp4'
-        fname_new = f'{self.classID}_{self.personID}_{self.roomID}_{self.camID}_{self.splitNum}_{dateStamp}{f_ext}'
+    def new_name(self): # assuming videos will already be time stamped, append labels to the front.
+        split_fname = self.fname.split('_')
+        if len(split_fname) == 9:  # video has been labeled before and has new format of date stamp
+            date_stamp = '_'.join(split_fname[-4:])
+        elif len(split_fname) == 6: # video has been labeled before and has old format of date stamp
+            date_stamp = split_fname[-1]
+        elif len(split_fname) == 4: # video has not been labeled before and has new format of date stamp
+            date_stamp = self.fname
+        else:
+            raise ValueError(f'video has an unknown file name format\n{self.fname}')
+        assert '.avi' in date_stamp or '.mp4' in date_stamp
+
+        fname_new = f'{self.classID}_{self.personID}_{self.roomID}_{self.camID}_{self.splitNum}_{date_stamp}'
         if self.has_joints:
-            fname_joints_new = fname_new[:-len(f_ext)]+'_joints.tensor'
+            fname_joints_new = fname_new[:-len('.avi')]+'_joints.tensor'
         else:
             fname_joints_new = None
         return fname_new, fname_joints_new
@@ -326,7 +334,7 @@ def label_data(labeled_dir, data_dir, csv_path):
             for opt in opts_dict:
                 print(opt, opts_dict[opt])
             print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-            print(f'\nfile name: {data_obj.fname}\nhas joints: {data_obj.has_joints}\n')
+            print(f'\nCLASS: {data_obj.classID}\nFILE NAME: {data_obj.fname}\nHAS JOINTS: {data_obj.has_joints}\n')
             print('CURRENT LABELS\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
             sorted_attrs = sort_attrs(data_obj)
             attr_labels = vars(data_obj)
@@ -340,10 +348,30 @@ def label_data(labeled_dir, data_dir, csv_path):
                 preview(data_dir)
                 break
             elif x == 'b':
+                for i in range(len(SAVED_CAPTIONS)):
+                    print(f'[{i}] {SAVED_CAPTIONS[i]}')
                 bad_info = input('\nNote on why its bad: ')
+                if bad_info.isnumeric():
+                    try:
+                        quest_info = SAVED_CAPTIONS[int(bad_info)]
+                    except IndexError:
+                        print('invalid input')
+                        break
+                else:
+                    SAVED_CAPTIONS.append(bad_info)
                 data_obj.is_bad(bad_info)
             elif x == 'q':
+                for i in range(len(SAVED_CAPTIONS)):
+                    print(f'[{i}] {SAVED_CAPTIONS[i]}')
                 quest_info = input('\nNote on why its questionable: ')
+                if quest_info.isnumeric():
+                    try:
+                        quest_info = SAVED_CAPTIONS[int(quest_info)]
+                    except IndexError:
+                        print('invalid input')
+                        break
+                else:
+                    SAVED_CAPTIONS.append(quest_info)
                 data_obj.is_quest(quest_info)
             elif x == 'c':
                 constants = set_constants(constants)  # initializes/updates constants
@@ -373,6 +401,14 @@ def label_data(labeled_dir, data_dir, csv_path):
                 return
 
             elif x in sorted_attrs.keys():
+                # quest_info and bad_info should not be edited without the setter method
+                if sorted_attrs[x] == 'quest_info':
+                    print(f'\npress [q] to edit quest_info\n')
+                    continue
+                elif sorted_attrs[x] == 'bad_info':
+                    print(f'\npress [b] to edit bad_info\n')
+                    continue
+
                 new_labels[sorted_attrs[x]] = edit_label(sorted_attrs[x])
                 if constants:
                     set_labels = constants.copy()
@@ -427,6 +463,12 @@ def main():
             continue
         labeled_name = input('Create/Select a labeled data folder: CurrentDir/')
         labeled_path = os.path.join(os.getcwd(), labeled_name)
+        if not os.path.exists(labeled_path):
+            try:
+                os.mkdir(labeled_path)
+            except FileNotFoundError:
+                print(f'{labeled_path} is not a valid path')
+                continue
         csv_fname = input('Create/Select a labels csv file: CurDir/')
         csv_fpath = os.path.join(os.getcwd(), csv_fname)
         label_data(labeled_path, dir_path, csv_fpath)
