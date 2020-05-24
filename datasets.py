@@ -85,7 +85,7 @@ if __name__ == '__main__':
     videos_path1 = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/labeled')
     missed_videos_path = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/not_in_csv')
     not_in_csv = dataset.check_videos([videos_path0, videos_path1], move_to_dir=missed_videos_path)
-
+    #testing commit from new computer
     # hist_ax = dataset.vis_feature(feature='classID', normalize=False)
 
 
