@@ -6,6 +6,7 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 class DataSet:
     """This class holds methods to manage mercury datasets"""
     def __init__(self, labels_path: str):
