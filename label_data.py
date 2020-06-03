@@ -456,12 +456,11 @@ def play_vid(fpath, playback_delay):
 
 def main():
     while True:
-        dir_name = input('Directory to sort from:')
-        dir_path = os.path.join(os.getcwd(), dir_name)
+        dir_path = input('Directory to sort from (full path):')
         if not os.path.isdir(dir_path):
-            print(f'{dir_name} is not a directory\n')
+            print(f'{dir_path} is not a directory\n')
             continue
-        labeled_name = input('Create/Select a labeled data folder: CurrentDir/')
+        labeled_name = input('Create/Select a labeled data folder (full path):')
         labeled_path = os.path.join(os.getcwd(), labeled_name)
         if not os.path.exists(labeled_path):
             try:
@@ -469,7 +468,7 @@ def main():
             except FileNotFoundError:
                 print(f'{labeled_path} is not a valid path')
                 continue
-        csv_fname = input('Create/Select a labels csv file: CurDir/')
+        csv_fname = input('Create/Select a labels csv file (full path):')
         csv_fpath = os.path.join(os.getcwd(), csv_fname)
         label_data(labeled_path, dir_path, csv_fpath)
         while True:
@@ -482,5 +481,4 @@ def main():
                 print('\ninvalid input\n')
                 continue
 if __name__ == '__main__':
-    # testing commit from new computer
     main()
