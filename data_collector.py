@@ -60,11 +60,14 @@ class Video:
             self.camera_stream = camera
 
     def write_stream(self, camera):
-        str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(camera.frames[0][1]))
-        str2 = time.strftime('to_%H-%M-%S_full_stream.avi', time.localtime(camera.frames[-1][1]))
-        video_path = os.path.join(self.path, str1 + str2)
-        frames = [frame[0] for frame in camera.frames]
-        self.write(video_path, frames, camera.fps, camera.frame_size)
+        if camera.frames:
+            str1 = time.strftime('%d-%b-%Y_%H-%M-%S_', time.localtime(camera.frames[0][1]))
+            str2 = time.strftime('to_%H-%M-%S_full_stream.avi', time.localtime(camera.frames[-1][1]))
+            video_path = os.path.join(self.path, str1 + str2)
+            frames = [frame[0] for frame in camera.frames]
+            self.write(video_path, frames, camera.fps, camera.frame_size)
+        else:
+            print('this stream has no frames')
 
     def split(self, path, camera):
         low_fps = 10.  # down sample to this fps
@@ -209,6 +212,6 @@ def collect_data(collections, collection_time, delay, video_path):
 
 
 if __name__ == '__main__':
-    videos_path = '/Volumes/500GB/data_collector_videos'
-    collect_data(collections=10, collection_time=1, delay=0.25, video_path=videos_path)
+    videos_path = '/Users/ricardorueda/Code/data_development/data_collector_videos'
+    collect_data(collections=2, collection_time=.25, delay=0.25, video_path=videos_path)
     # view_data()
