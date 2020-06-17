@@ -4,7 +4,9 @@ import os
 import time
 import sys
 import pandas as pd
-
+# todo: why is the message about a file renamed popping up so many times
+# todo: add option to save captions as json and reload when running script
+# todo: allow going back from labels menu, don't allow empty strings
 # All Labels: Subject to Change
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
 roomID_labels = ['RRuedaBed', 'ATamGarage', 'ATwomblyMaster', 'NMousaBed', 'RRuedaLiving', 'JLeeBed']
@@ -22,7 +24,8 @@ ALL_LABELS = {'classID': classID_labels, 'personID': personID_labels, 'roomID': 
               'gender': gender_labels, 'displacement': displace_labels}
 ALL_LABELS.update(dict.fromkeys(['skinTone', 'lighting', 'roomInfo', 'zoom', 'vidSpeed', 'variance'], descrip_labels))
 
-SAVED_CAPTIONS = []
+SAVED_CAPTIONS_BAD = []
+SAVED_CAPTIONS_QUEST = []
 
 
 class DataObject:
@@ -99,13 +102,13 @@ class DataObject:
         for attr in labels_dictionary:
             setattr(self, attr, labels_dictionary[attr])
 
-    def new_name(self): # assuming videos will already be time stamped, append labels to the front.
+    def new_name(self):  # assuming videos will already be time stamped, append labels to the front.
         split_fname = self.fname.split('_')
-        if len(split_fname) == 9:  # video has been labeled before and has new format of date stamp
+        if len(split_fname) == 9:   # video has been labeled before and has new format of date stamp
             date_stamp = '_'.join(split_fname[-4:])
-        elif len(split_fname) == 6: # video has been labeled before and has old format of date stamp
+        elif len(split_fname) == 6:  # video has been labeled before and has old format of date stamp
             date_stamp = split_fname[-1]
-        elif len(split_fname) == 4: # video has not been labeled before and has new format of date stamp
+        elif len(split_fname) == 4:  # video has not been labeled before and has new format of date stamp
             date_stamp = self.fname
         else:
             raise ValueError(f'video has an unknown file name format\n{self.fname}')
@@ -166,6 +169,7 @@ class DataObject:
 
 def sort_attrs(data_obj: DataObject):
     """creates dictionary where empty attributes of type None are first (have keys 0-n)
+    repurposing to move cursor through labels
 
     Args:
         data_obj: a DataObject of a video
@@ -260,6 +264,7 @@ def edit_label(attr):
 
 
 def restore_vid(prev_data_obj: DataObject, from_dir: str, to_dir: str):
+    """restores previous file to original filename & path"""
     from_path = os.path.join(from_dir, prev_data_obj.fname)
     to_path = os.path.join(to_dir, prev_data_obj.prev_fname)
     os.rename(from_path, to_path)
@@ -304,6 +309,7 @@ def label_data(labeled_dir, data_dir, csv_path):
     videos = [f for f in os.listdir(data_dir) if not f.startswith('._') and (f.endswith('.avi') or f.endswith('.mp4'))]
     data_objs = []
     i = 0
+    cursor = 0
     while i < len(videos):
         cv2.destroyAllWindows()
         fname_vid = videos[i]
@@ -336,7 +342,8 @@ def label_data(labeled_dir, data_dir, csv_path):
             print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
             print(f'\nCLASS: {data_obj.classID}\nFILE NAME: {data_obj.fname}\nHAS JOINTS: {data_obj.has_joints}\n')
             print('CURRENT LABELS\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
-            sorted_attrs = sort_attrs(data_obj)
+            sorted_attrs = sort_attrs(data_obj)  # disabling
+            # sys.stdout.write(f'\r{}')
             attr_labels = vars(data_obj)
             for index in sorted_attrs:
                 print(f'[{index}] {sorted_attrs[index]}: {attr_labels[sorted_attrs[index]]}')  # [1] classID: Standing
@@ -348,30 +355,30 @@ def label_data(labeled_dir, data_dir, csv_path):
                 preview(data_dir)
                 break
             elif x == 'b':
-                for i in range(len(SAVED_CAPTIONS)):
-                    print(f'[{i}] {SAVED_CAPTIONS[i]}')
+                for i in range(len(SAVED_CAPTIONS_BAD)):
+                    print(f'[{i}] {SAVED_CAPTIONS_BAD[i]}')
                 bad_info = input('\nNote on why its bad: ')
                 if bad_info.isnumeric():
                     try:
-                        quest_info = SAVED_CAPTIONS[int(bad_info)]
+                        bad_info = SAVED_CAPTIONS_BAD[int(bad_info)]
                     except IndexError:
                         print('invalid input')
                         break
                 else:
-                    SAVED_CAPTIONS.append(bad_info)
+                    SAVED_CAPTIONS_BAD.append(bad_info)
                 data_obj.is_bad(bad_info)
             elif x == 'q':
-                for i in range(len(SAVED_CAPTIONS)):
-                    print(f'[{i}] {SAVED_CAPTIONS[i]}')
+                for i in range(len(SAVED_CAPTIONS_QUEST)):
+                    print(f'[{i}] {SAVED_CAPTIONS_QUEST[i]}')
                 quest_info = input('\nNote on why its questionable: ')
                 if quest_info.isnumeric():
                     try:
-                        quest_info = SAVED_CAPTIONS[int(quest_info)]
+                        quest_info = SAVED_CAPTIONS_QUEST[int(quest_info)]
                     except IndexError:
                         print('invalid input')
                         break
                 else:
-                    SAVED_CAPTIONS.append(quest_info)
+                    SAVED_CAPTIONS_QUEST.append(quest_info)
                 data_obj.is_quest(quest_info)
             elif x == 'c':
                 constants = set_constants(constants)  # initializes/updates constants
@@ -389,7 +396,7 @@ def label_data(labeled_dir, data_dir, csv_path):
                     continue
             elif x == 'z':
                 if len(data_objs) > 0:
-                    restore_vid(data_objs[-1], labeled_dir, data_dir)  # restores previous file to original filename & path
+                    restore_vid(data_objs[-1], labeled_dir, data_dir)
                     # restored = True
                     i -= 1
                     labeled_count -= 1
@@ -446,7 +453,7 @@ def play_vid(fpath, playback_delay):
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
-            frame = resize_img(frame, 256)
+            frame = resize_img(frame, 480)
             cv2.imshow(fpath, frame)
         else:
             break
@@ -480,5 +487,7 @@ def main():
             else:
                 print('\ninvalid input\n')
                 continue
+
+
 if __name__ == '__main__':
     main()
