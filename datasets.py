@@ -65,7 +65,8 @@ class DataSet:
 
         videos_in_dataset = self.labels_df['fname'].to_list()
         prev_videos_in_dataset = self.labels_df['prev_fname'].to_list()
-        not_in_dataset = list(set(all_videos) - set(videos_in_dataset)) #- set(prev_videos_in_dataset))
+        not_in_dataset = list(set(all_videos) - set(videos_in_dataset) - set(prev_videos_in_dataset))
+        extra_videos = list(set(videos_in_dataset) - set(all_videos))
         not_in_dataset_paths = []
         for dir in video_dirs:
             for vid in not_in_dataset:
@@ -76,16 +77,16 @@ class DataSet:
                 os.mkdir(move_to_dir)
             for vid_path in not_in_dataset_paths:
                 os.rename(vid_path, os.path.join(move_to_dir, os.path.basename(vid_path)))
-        return not_in_dataset_paths
+        return not_in_dataset_paths, extra_videos
 
 
 if __name__ == '__main__':
-    csv_path = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/ricky_room_IR_labels.csv')
+    csv_path = '/Users/ricardorueda/Code/mercury_datasets_lfs/ricky_room_IR/ricky_room_IR_labels.csv'
     dataset = DataSet(csv_path)
-    videos_path0 = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/half_labeled')
-    videos_path1 = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/labeled')
-    missed_videos_path = os.path.join(os.getcwd(), 'datasets/ricky_room_IR/not_in_csv')
-    not_in_csv = dataset.check_videos([videos_path0, videos_path1], move_to_dir=missed_videos_path)
+    videos_path0 = '/Users/ricardorueda/Code/mercury_datasets_lfs/ricky_room_IR/half_labeled'
+    videos_path1 = '/Users/ricardorueda/Code/mercury_datasets_lfs/ricky_room_IR/labeled'
+    missed_videos_path = os.path.join(os.getcwd(), 'mercury_datasets_lfs/ricky_room_IR/extra_videos')
+    not_in_csv, extra_vids = dataset.check_videos([videos_path0, videos_path1], move_to_dir=None)
     #testing commit from new computer
     # hist_ax = dataset.vis_feature(feature='classID', normalize=False)
 
