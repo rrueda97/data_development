@@ -110,6 +110,7 @@ class DataObject:
             setattr(self, attr, labels_dictionary[attr])
 
     def new_name(self):  # assuming videos will already be time stamped, append labels to the front.
+        # todo: as new formats arise, add conditionals
         split_fname = self.fname.split('_')
         if len(split_fname) == 9:   # video has been labeled before and has new format of date stamp
             date_stamp = '_'.join(split_fname[-4:])
@@ -117,9 +118,13 @@ class DataObject:
             date_stamp = split_fname[-1]
         elif len(split_fname) == 4:  # video has not been labeled before and has new format of date stamp
             date_stamp = self.fname
+        elif self.fname.endswith('.png'):
+            user = split_fname[0]
+            date_stamp = split_fname[-1]
+            # single image from s3 username_timestamp.png
         else:
             raise ValueError(f'video has an unknown file name format\n{self.fname}')
-        assert '.avi' in date_stamp or '.mp4' in date_stamp
+        assert '.avi' in date_stamp or '.mp4' in date_stamp or '.png' in date_stamp
 
         fname_new = f'{self.classID}_{self.personID}_{self.roomID}_{self.camID}_{self.splitNum}_{date_stamp}'
         if self.has_joints:
@@ -243,6 +248,10 @@ def set_constants(constants: dict = None):
                 continue
             else:
                 new_label = ALL_LABELS[attr_sel][int(new_label_i)]
+        elif new_label_i == 'new':
+            custom_label = input('add custom label:')
+            ALL_LABELS[attr_sel].append(custom_label)
+            new_label = custom_label
         else:
             print('invalid input')
             continue 
@@ -266,6 +275,9 @@ def edit_label(attr):
             else:
                 new_label = ALL_LABELS[attr][int(new_label_i)]
                 return new_label
+        elif new_label_i == 'new':
+            custom_label = input('add custom label:')
+            ALL_LABELS[attr].append(custom_label)
         else:
             print('invalid input')
 
@@ -448,7 +460,7 @@ def resize_img(img, size, offset=0):
     return img
 
 
-def display_data(fpath, playback_delay):  # todo: change to display_data for either single image or video
+def display_data(fpath, playback_delay):
     if fpath.endswith('.avi'):
         cap = cv2.VideoCapture(fpath)
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get frame count to make sure it is a 30 frame example
@@ -472,20 +484,20 @@ def display_data(fpath, playback_delay):  # todo: change to display_data for eit
     elif fpath.endswith('png'):
         img = cv2.imread(fpath)
         cv2.imshow('Data', resize_img(img, 480))
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
 
 def main(unlabeled_data_path, labeled_data_path, labels_path):
     while True:
         if not os.path.isdir(unlabeled_data_path):
             print(f'{unlabeled_data_path} is not a directory\n')
-            continue
+            break
         if not os.path.exists(labeled_data_path):
             try:
                 os.mkdir(labeled_data_path)
             except FileNotFoundError:
                 print(f'{labeled_data_path} is not a valid path')
-                continue
+                break
 
         label_data(labeled_data_path, unlabeled_data_path, labels_path)
         while True:
@@ -500,8 +512,8 @@ def main(unlabeled_data_path, labeled_data_path, labels_path):
 
 
 if __name__ == '__main__':
-    main(
-        unlabeled_data_path='Users/ricardorueda/Code/s3_livedevicepersoncapture',
-        labeled_data_path='Users/ricardorueda/Code/s3_livedevicepersoncapture/labeled',
-        labels_path='Users/ricardorueda/Code/s3_livedevicepersoncapture/labeled/labels.csv'
-    )
+    unlabeled_path = '/Users/ricardorueda/Code/s3_livedevicepersoncapture'
+    labeled_path = os.path.join(unlabeled_path, 'labeled')
+    labels_path = os.path.join(labeled_path, 'labels.csv')
+    # edit above lines as needed
+    main(unlabeled_data_path=unlabeled_path, labeled_data_path=labeled_path, labels_path=labels_path)
