@@ -6,7 +6,7 @@ import sys
 import pandas as pd
 # todo: why is the message about a file renamed popping up so many times
 # todo: add option to save captions as json and reload when running script
-# todo: allow going back from labels menu, don't allow empty strings
+# todo: add dataset column to csv
 # All Labels: Subject to Change
 classID_labels = ['Falling', 'SittingUp', 'Standing', 'StillGround', 'StillBed', 'RollingGround', 'RollingBed']
 roomID_labels = ['RRuedaBed', 'ATamGarage', 'ATwomblyMaster', 'NMousaBed', 'RRuedaLiving', 'JLeeBed']
@@ -72,6 +72,13 @@ class DataObject:
             self.quest_info = None
             self.prev_fname = None
             self.prev_fname_joints = None
+            self.dataset = None
+
+    def __getattr__(self, item):
+        if item in self:
+            return self[item]
+        else:
+            raise AttributeError(f'No such attribute {item}')
 
     def load_labels(self, labels_file_path: str):
         restored = False
@@ -279,12 +286,13 @@ def restore_vid(prev_data_obj: DataObject, from_dir: str, to_dir: str):
 
 
 def preview(data_dir):
-    videos = [f for f in os.listdir(data_dir) if not f.startswith('._') and (f.endswith('.avi') or f.endswith('.mp4'))]
+    data_types = ('.avi', '.mp4', '.png')
+    data_files = [f for f in os.listdir(data_dir) if not f.startswith('._') and f.endswith(data_types)]
     i = 0
-    while i < len(videos):
+    while i < len(data_files):
         cv2.destroyAllWindows()
-        fpath_vid = os.path.join(data_dir, videos[i])
-        play_vid(fpath_vid, playback_delay=10)
+        fpath_vid = os.path.join(data_dir, data_files[i])
+        display_data(fpath_vid, playback_delay=10)
         # Function should start here
         while True:
             usr_inp = input('Previewing Data\n[enter] replay\n[a] previous video\n[d] next video\n[q] exit preview\n:')
@@ -304,22 +312,23 @@ def preview(data_dir):
 
 
 def label_data(labeled_dir, data_dir, csv_path):
+    single_image = False
     labeled_count = 0
     constants = None  # initialize with no constants
-    videos = [f for f in os.listdir(data_dir) if not f.startswith('._') and (f.endswith('.avi') or f.endswith('.mp4'))]
+    data_types = ('.avi', '.mp4', '.png')
+    data_files = [f for f in os.listdir(data_dir) if not f.startswith('._') and f.endswith(data_types)]
     data_objs = []
     i = 0
-    cursor = 0
-    while i < len(videos):
+    while i < len(data_files):
         cv2.destroyAllWindows()
-        fname_vid = videos[i]
+        fname_vid = data_files[i]
         fpath_vid = os.path.join(data_dir, fname_vid)
         if not os.path.exists(fpath_vid):
             print(f'video no longer exists as {fpath_vid}\nlook in {labeled_dir}')
             i += 1
             continue
 
-        is_bad_video = play_vid(fpath_vid, playback_delay=50)
+        is_bad_video = display_data(fpath_vid, playback_delay=50)
         if is_bad_video:
             i += 1
             continue
@@ -350,7 +359,7 @@ def label_data(labeled_dir, data_dir, csv_path):
             print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
             x = input('\nAttribute to Edit: ')
             if not x:  # replay
-                play_vid(fpath_vid, playback_delay=50)
+                display_data(fpath_vid, playback_delay=50)
             elif x == 'p':  # preview
                 preview(data_dir)
                 break
@@ -439,45 +448,46 @@ def resize_img(img, size, offset=0):
     return img
 
 
-def play_vid(fpath, playback_delay):
-    cap = cv2.VideoCapture(fpath)
-    frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get frame count to make sure it is a 30 frame example
-    if frame_count != 30:
-        print('Video is NOT 30 frames')
-        bad_video = True
-        return bad_video
-    if not cap.isOpened():
-        print('Could NOT display video')
-        bad_video = True
-        return bad_video
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if ret:
-            frame = resize_img(frame, 480)
-            cv2.imshow(fpath, frame)
-        else:
-            break
-        cv2.waitKey(playback_delay)
-    cap.release()
+def display_data(fpath, playback_delay):  # todo: change to display_data for either single image or video
+    if fpath.endswith('.avi'):
+        cap = cv2.VideoCapture(fpath)
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))  # Get frame count to make sure it is a 30 frame example
+        if frame_count != 30:
+            print('Video is NOT 30 frames')
+            bad_video = True
+            return bad_video
+        if not cap.isOpened():
+            print('Could NOT display video')
+            bad_video = True
+            return bad_video
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if ret:
+                frame = resize_img(frame, 480)
+                cv2.imshow('Data', frame)
+            else:
+                break
+            cv2.waitKey(playback_delay)
+        cap.release()
+    elif fpath.endswith('png'):
+        img = cv2.imread(fpath)
+        cv2.imshow('Data', resize_img(img, 480))
+        cv2.waitKey(0)
 
 
-def main():
+def main(unlabeled_data_path, labeled_data_path, labels_path):
     while True:
-        dir_path = input('Directory to sort from (full path):')
-        if not os.path.isdir(dir_path):
-            print(f'{dir_path} is not a directory\n')
+        if not os.path.isdir(unlabeled_data_path):
+            print(f'{unlabeled_data_path} is not a directory\n')
             continue
-        labeled_name = input('Create/Select a labeled data folder (full path):')
-        labeled_path = os.path.join(os.getcwd(), labeled_name)
-        if not os.path.exists(labeled_path):
+        if not os.path.exists(labeled_data_path):
             try:
-                os.mkdir(labeled_path)
+                os.mkdir(labeled_data_path)
             except FileNotFoundError:
-                print(f'{labeled_path} is not a valid path')
+                print(f'{labeled_data_path} is not a valid path')
                 continue
-        csv_fname = input('Create/Select a labels csv file (full path):')
-        csv_fpath = os.path.join(os.getcwd(), csv_fname)
-        label_data(labeled_path, dir_path, csv_fpath)
+
+        label_data(labeled_data_path, unlabeled_data_path, labels_path)
         while True:
             inp = input('\n[s] keep sorting\n[q] exit\n:')
             if inp == 's':
@@ -490,4 +500,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(
+        unlabeled_data_path='Users/ricardorueda/Code/s3_livedevicepersoncapture',
+        labeled_data_path='Users/ricardorueda/Code/s3_livedevicepersoncapture/labeled',
+        labels_path='Users/ricardorueda/Code/s3_livedevicepersoncapture/labeled/labels.csv'
+    )
