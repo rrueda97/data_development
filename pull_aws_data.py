@@ -85,6 +85,8 @@ def sort_imgs(dir_path):
             label = 'in bed'
         elif key_press == 52:  # 4: empty
             label = 'empty'
+        elif key_press == 53:  # 5: sit-stand
+            label = 'sit-stand'
         else:
             raise TypeError('entered invalid key stroke')
         move_data(label, img_path, det_path)
@@ -120,9 +122,9 @@ def show_img(img_path, detection_path):
 
 if __name__ == '__main__':
     synced_data_path = '/Users/ricardorueda/Data/livedevicepersoncapture_client1'
-    sorted_data_path = '/Users/ricardorueda/Data/livedevicepersoncapture_client1_sorted'
-    main(data_path=synced_data_path,
-         sorted_data_path=sorted_data_path)
+    sorted_data_path = '/Users/ricardorueda/Data/livedevicepersoncapture_client1_09-2020_sorted'
+    # main(data_path=synced_data_path,
+    #      sorted_data_path=sorted_data_path)
     # for dir in os.listdir(sorted_data_path):
     #     dir_path = os.path.join(sorted_data_path, dir)
     #     if not os.path.isdir(dir_path):
