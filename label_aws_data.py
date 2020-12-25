@@ -60,10 +60,10 @@ def get_blurred_img(file_name: str):
     lambda_response = invoke_lambda(function_name='pull_image_lambda',
                                     payload=pull_image_lambda_payload)
     assert lambda_response['statusCode'] == 200
-    base64_img_bytes = base64.b64decode(lambda_response['img_str'])
+    base64_img_bytes = base64.b64decode(lambda_response['img_str_blurred'])
     img_array = np.frombuffer(base64_img_bytes, dtype=np.uint8)
     img = cv2.imdecode(img_array, flags=cv2.IMREAD_COLOR)
-    return cv2.medianBlur(img, 9)
+    return img
 
 
 def draw_detection(img, detections: list):
