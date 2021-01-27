@@ -41,16 +41,22 @@ def invoke_lambda(function_name: str, payload: dict, invocation_type: str ='Requ
 
 def get_unlabeled_data(user_pool_id: str):
     """function to pull unlabeled items from DetectionsByClientUserAndTime using UserPoolID"""
-    db_lambda_payload = {'mode': 'query',
+    db_lambda_payload = {'mode': 'query_key_expression',
                          'table_name': 'DetectionsByClientUserAndTime',
-                         'key_name': 'UPID',
-                         'key_value': user_pool_id}
+                         'key_expression': {'UPID':
+                                               {'relationship': 'equals',
+                                                'value': user_pool_id}
+                                           },
+                         'filter_expression': {'TrueOutput':
+                                                  {'relationship': 'equals',
+                                                   'value': 'not set'}
+                                              }
+                         }
     print('\npulling data from db...')
     lambda_response = invoke_lambda(function_name='database_lambda',
                                     payload=db_lambda_payload)
     assert lambda_response['statusCode'] == 200
-    unlabeled_data = [data for data in lambda_response['result'] if data['TrueOutput'] == 'not set']
-    return unlabeled_data
+    return lambda_response['result']
 
 
 def get_blurred_img(file_name: str):
@@ -112,7 +118,9 @@ def set_label(item: dict):
 
 def main(user_pool_id):
     """main function to label data"""
-    for item in get_unlabeled_data(user_pool_id=user_pool_id):
+    unlabeled_data = get_unlabeled_data(user_pool_id=user_pool_id)
+    print(f"\nReturned {len(unlabeled_data)} items...\n")
+    for item in unlabeled_data:
         s3_img = draw_detection(get_blurred_img(item['Filename']), item['Box'])
         cv2.imshow('Label Image', s3_img)
         cv2.waitKey(1)
